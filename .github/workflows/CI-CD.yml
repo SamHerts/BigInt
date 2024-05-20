@@ -20,7 +20,7 @@ jobs:
         run: cd tests/ && cmake -S . -B bin/Debug -DCMAKE_BUILD_TYPE=Debug
 
       - name: Run Make
-        run: cmake --build bin/Debug --clean-first     
+        run: cmake --build tests/bin/Debug --clean-first     
 
       - name: Run Tests
         run: GTest_Run --gtest_color=no
