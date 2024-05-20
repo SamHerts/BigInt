@@ -34,7 +34,7 @@ TEST(BigInt_test, Creation_Tests)
     ASSERT_EQ(bigint(my_longlong), 100);
     ASSERT_EQ(bigint(my_double), 100);
     ASSERT_EQ(bigint(my_char), 7);
-    ASSERT_EQ(bigint(my_string), 100);
+    ASSERT_EQ(bigint(my_string), "100");
 }
 
 TEST(BigInt_test, Addition_Tests)

@@ -98,7 +98,7 @@ namespace bigint_ns {
         {
             int temp = static_cast<int>(c);
             if (isdigit(temp)) {
-                base_repr = temp;
+                base_repr = temp - '0';
             } else {
                 throw std::runtime_error("Invalid Big Integer has been fed.");
             }
