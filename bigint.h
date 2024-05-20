@@ -341,7 +341,12 @@ namespace bigint_ns {
                     *this = mod(std::to_string(this->base_repr), rhs.str);
                 }
             } else {
-                *this = mod(this->str, rhs.str);
+                if (!rhs.is_big) {
+                    *this = mod(this->str, std::to_string(rhs.base_repr));
+                }
+                else {
+                    *this = mod(this->str, rhs.str);
+                }
             }
 
             return *this;
@@ -406,7 +411,13 @@ namespace bigint_ns {
                     return lhs.base_repr < rhs.base_repr;
                 }
                 // TODO: Implement half
-                return std::to_string(lhs.base_repr) < rhs.str;
+                auto temp = std::to_string(lhs.base_repr);
+                if(temp.length() == rhs.str.length())
+                {
+                    return temp < rhs.str;
+                }
+
+                return temp.length() < rhs.str.length();
             }
 
             if (is_negative(lhs) && is_negative(rhs)) {
@@ -473,7 +484,7 @@ namespace bigint_ns {
                 return std::abs(s.base_repr);
             }
             if (is_negative(s))
-                return s.str.substr(1, s.str.length() - 2);
+                return s.str.substr(1, s.str.length() - 1);
 
             return s;
         }
@@ -746,22 +757,22 @@ namespace bigint_ns {
         // than divisor.
         int idx = 0;
         bigint temp = char_to_int(numerator.str[idx]);
-        while (idx < (numerator.str.size() - 1) && temp < denominator)
+        while (idx < (numerator.str.size() - 1) && temp < denominator) {
             temp = temp * 10 + (char_to_int(numerator.str[++idx]));
-
+        }
         // Repeatedly divide divisor with temp. After
         // every division, update temp to include one
         // more digit.
         while ((numerator.str.size() - 1) > idx)
         {
             // Store result in answer i.e. temp / divisor
-            ans += int_to_char(int(temp / denominator));
+            ans += int_to_char(int(temp / int(denominator)));
 
             // Take next digit of number
             temp = char_to_int(int((temp % denominator) * 10 + numerator.str[++idx]));
         }
 
-        ans += int_to_char(int(temp / denominator));
+        ans += int_to_char(int(temp / int(denominator)));
 
         // If divisor is greater than number
         if (ans.length() == 0)

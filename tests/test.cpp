@@ -76,10 +76,69 @@ TEST(BigInt_test, Division_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
-    //ASSERT_EQ(bigint("30") / bigint("20"), "1");
+    ASSERT_EQ(bigint("30") / bigint("20"), "1");
     ASSERT_EQ(small_number / 5, 1991);
     ASSERT_EQ(small_number / 181, 55);
     ASSERT_EQ(huge_number_1 / 2, 61728394);
     ASSERT_EQ(huge_number_2 / huge_number_1, 81000000737);
+}
+
+TEST(BigInt_test, Comparison_Tests)
+{
+    bigint small_number = 9955;
+    bigint huge_number_1 = "123456789";
+    bigint huge_number_2 = "9999999999999999999";
+    ASSERT_TRUE(small_number > 5);
+    ASSERT_TRUE(small_number > 0);
+    ASSERT_TRUE(small_number > -10);
+    ASSERT_TRUE(small_number > "-123456789");
+    ASSERT_FALSE(small_number > huge_number_1);
+
+    ASSERT_TRUE(small_number < huge_number_1);
+    ASSERT_TRUE(small_number < huge_number_2);
+    ASSERT_TRUE(huge_number_1 < huge_number_2);
+
+    ASSERT_TRUE(small_number == small_number);
+    ASSERT_TRUE(small_number >= small_number);
+    ASSERT_TRUE(small_number <= small_number);
+    ASSERT_TRUE(huge_number_2 == huge_number_2);
+    ASSERT_TRUE(huge_number_2 >= huge_number_2);
+    ASSERT_TRUE(huge_number_2 <= huge_number_2);
+
+    ASSERT_TRUE(huge_number_2 > 0);
+    ASSERT_TRUE(huge_number_2 > "0");
+    ASSERT_TRUE(huge_number_2 > "-1");
+
+    ASSERT_TRUE(bigint(0) == 0);
+    ASSERT_TRUE(bigint(0) >= 0);
+    ASSERT_TRUE(bigint(0) <= 0);
+    ASSERT_TRUE(bigint(0) == "0");
+    ASSERT_TRUE(bigint(0) >= "0");
+    ASSERT_TRUE(bigint(0) <= "0");
+
+    ASSERT_TRUE(bigint(1) == 1);
+    ASSERT_TRUE(bigint(1) >= 1);
+    ASSERT_TRUE(bigint(1) <= 1);
+    ASSERT_TRUE(bigint(1) == "1");
+    ASSERT_TRUE(bigint(1) >= "1");
+    ASSERT_TRUE(bigint(1) <= "1");
+}
+
+TEST(BigInt_test, Modulus_Tests)
+{
+    bigint small_number = 9955;
+    bigint huge_number_1 = "123456789";
+    bigint huge_number_2 = "9999999999999999999";
+    ASSERT_EQ(small_number % 2, 1);
+    ASSERT_EQ(small_number % 3, 1);
+    ASSERT_EQ(small_number % 4, 3);
+    ASSERT_EQ(small_number % 5, 0);
+
+    ASSERT_EQ(huge_number_1 % 2, 1);
+    ASSERT_EQ(huge_number_1 % 3, 0);
+    ASSERT_EQ(huge_number_1 % 4, 1);
+    ASSERT_EQ(huge_number_1 % 5, 4);
+
+    ASSERT_EQ(huge_number_1 % small_number, 4834);
 }
 
