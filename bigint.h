@@ -27,14 +27,14 @@
 #ifndef BIGINT_H_
 #define BIGINT_H_
 
-namespace bigint_ns {
-
 #include <string>
 #include <sstream>
 #include <vector>
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+
+namespace bigint_ns {
 
     class bigint {
     private:
