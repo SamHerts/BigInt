@@ -39,7 +39,7 @@ TEST(BigInt_test, Addition_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
-    ASSERT_EQ(bigint(10) + bigint(20), 30);
+    ASSERT_EQ(bigint("10") + bigint("20"), "30");
     ASSERT_EQ(small_number + 5, 9960);
     ASSERT_EQ(small_number + small_number, 19910);
     ASSERT_EQ(huge_number_1 + 1, "123456790");
@@ -51,9 +51,35 @@ TEST(BigInt_test, Subtraction_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "10000000000000000000";
-    ASSERT_EQ(bigint(30) - bigint(20), 10);
+    ASSERT_EQ(bigint("30") - bigint("20"), "10");
     ASSERT_EQ(small_number - 5, 9950);
     ASSERT_EQ(small_number - small_number, 0);
     ASSERT_EQ(huge_number_1 - 1, "123456788");
     ASSERT_EQ(huge_number_2 - 1, "9999999999999999999");
 }
+
+TEST(BigInt_test, Multiplication_Tests)
+{
+    bigint small_number = 9955;
+    bigint huge_number_1 = "123456789";
+    bigint huge_number_2 = "9999999999999999999";
+    ASSERT_EQ(bigint("30") * bigint("20"), "600");
+    ASSERT_EQ(small_number * 5, 49775);
+    ASSERT_EQ(small_number * small_number, 99102025);
+    ASSERT_EQ(huge_number_1 * 2, "246913578");
+    ASSERT_EQ(huge_number_2 * huge_number_2, "99999999999999999980000000000000000001");
+}
+
+
+TEST(BigInt_test, Division_Tests)
+{
+    bigint small_number = 9955;
+    bigint huge_number_1 = "123456789";
+    bigint huge_number_2 = "9999999999999999999";
+    //ASSERT_EQ(bigint("30") / bigint("20"), "1");
+    ASSERT_EQ(small_number / 5, 1991);
+    ASSERT_EQ(small_number / 181, 55);
+    ASSERT_EQ(huge_number_1 / 2, 61728394);
+    ASSERT_EQ(huge_number_2 / huge_number_1, 81000000737);
+}
+

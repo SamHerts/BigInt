@@ -33,6 +33,7 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <iostream>
 
 namespace bigint_ns {
 
@@ -269,16 +270,30 @@ namespace bigint_ns {
                         (rhs.base_repr != 0 &&
                          this->base_repr > std::numeric_limits<long long>::max() / rhs.base_repr) ||
                         (rhs.base_repr != 0 &&
-                         this->base_repr < std::numeric_limits<long long>::min() / rhs.base_repr)) {
+                         this->base_repr < std::numeric_limits<long long>::min() / rhs.base_repr))
+                    {
                         *this = multiply(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    } else {
+                    }
+                    else
+                    {
                         this->base_repr *= rhs.base_repr;
                     }
-                } else {
+                }
+                else
+                {
                     *this = multiply(std::to_string(this->base_repr), rhs.str);
                 }
-            } else {
-                *this = multiply(this->str, rhs.str);
+            }
+            else
+            {
+                if (!rhs.is_big)
+                {
+                    *this = multiply(this->str, std::to_string(rhs.base_repr));
+                }
+                else
+                {
+                    *this = multiply(this->str, rhs.str);
+                }
             }
             return *this;
         }
@@ -299,7 +314,13 @@ namespace bigint_ns {
                     *this = divide(std::to_string(this->base_repr), rhs.str);
                 }
             } else {
-                *this = divide(this->str, rhs.str);
+                if (!rhs.is_big)
+                {
+                    *this = divide( this->str, std::to_string(rhs.base_repr));
+                }
+                else{
+                    *this = divide(this->str, rhs.str);
+                }
             }
             return *this;
         }
@@ -399,7 +420,13 @@ namespace bigint_ns {
             if (is_negative(rhs)) {
                 return false;
             }
-            return lhs.str < rhs.str;
+
+            if(lhs.str.length() == rhs.str.length())
+            {
+                return lhs.str < rhs.str;
+            }
+
+            return lhs.str.length() < rhs.str.length();
         }
 
         friend bool operator>(const bigint &l, const bigint &r)
@@ -698,31 +725,59 @@ namespace bigint_ns {
             return 0;
         }
 
-        bigint ans = 0;
-        if (is_negative(numerator) && is_negative(denominator)) {
+        if (is_negative(numerator) && is_negative(denominator))
+        {
             return abs(numerator) / abs(denominator);
-        } else if (is_negative(numerator) || is_negative(denominator)) {
+        }
+        else if (is_negative(numerator) || is_negative(denominator))
+        {
             return (abs(numerator) / abs(denominator)) * -1;
-        } else {
-            if (denominator > numerator) {
-                return 0;
-            }
-                // TODO: Implement shortDivide
+        }
+
+        if (denominator > numerator)
+        {
+            return 0;
+        }
+
+        // As result can be very large store it in string
+        std::string ans;
+
+        // Find prefix of number that is larger
+        // than divisor.
+        int idx = 0;
+        bigint temp = char_to_int(numerator.str[idx]);
+        while (idx < (numerator.str.size() - 1) && temp < denominator)
+            temp = temp * 10 + (char_to_int(numerator.str[++idx]));
+
+        // Repeatedly divide divisor with temp. After
+        // every division, update temp to include one
+        // more digit.
+        while ((numerator.str.size() - 1) > idx)
+        {
+            // Store result in answer i.e. temp / divisor
+            ans += int_to_char(int(temp / denominator));
+
+            // Take next digit of number
+            temp = char_to_int(int((temp % denominator) * 10 + numerator.str[++idx]));
+        }
+
+        ans += int_to_char(int(temp / denominator));
+
+        // If divisor is greater than number
+        if (ans.length() == 0)
+            return "0";
+
+        // else return ans
+        return ans;
+
+
+        // TODO: Implement shortDivide
 //        if(str2.length() <= 19) {
 //            std::stringstream strstrm(str2);
 //            unsigned long long int int_str2 = 0;
 //            strstrm >> int_str2;
 //            ans = shortDivide(str1, int_str2);
 //        }
-            else {
-                bigint temp = numerator;
-                while (temp >= denominator) {
-                    temp -= denominator;
-                    ans++;
-                }
-            }
-        }
-        return ans;
     }
 
     inline std::string bigint::shortDivide(std::string s1, unsigned long long int divisor)
