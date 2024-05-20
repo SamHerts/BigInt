@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  Run_Tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4     
+
+      - name: Configure CMAKE
+        run: cmake -S . -B bin/Debug -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Run Make
+        run: cmake --build bin/Debug --clean-first     
+
+      - name: Run Tests
+        run: GTest_Run --gtest_color=no
