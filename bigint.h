@@ -78,6 +78,16 @@ namespace bigint_ns {
 
         static bool is_bigint(const std::string &);
 
+        inline static int char_to_int(const char input)
+        {
+            return input - '0';
+        }
+
+        inline static int int_to_char(const int input)
+        {
+            return input + '0';
+        }
+
     public:
         bool is_big = false;
         std::string str;
@@ -168,19 +178,35 @@ namespace bigint_ns {
 
         bigint operator+=(const bigint &rhs)
         {
-            if (!this->is_big) {
-                if (!rhs.is_big) {
+            if (!this->is_big)
+            {
+                if (!rhs.is_big)
+                {
                     if (rhs.base_repr > 0 && this->base_repr > std::numeric_limits<long long>::max() - rhs.base_repr ||
-                        rhs < 0 && this->base_repr < std::numeric_limits<long long>::min() - rhs.base_repr) {
+                        rhs < 0 && this->base_repr < std::numeric_limits<long long>::min() - rhs.base_repr)
+                    {
                         *this = add(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    } else {
+                    }
+                    else
+                    {
                         this->base_repr += rhs.base_repr;
                     }
-                } else {
+                }
+                else
+                {
                     *this = add(std::to_string(this->base_repr), rhs.str);
                 }
-            } else {
-                *this = add(this->str, rhs.str);
+            }
+            else
+            {
+                if (!rhs.is_big)
+                {
+                    *this = add(this->str, std::to_string(rhs.base_repr));
+                }
+                else
+                {
+                    *this = add(this->str, rhs.str);
+                }
             }
             return *this;
         }
@@ -194,19 +220,35 @@ namespace bigint_ns {
 
         bigint operator-=(const bigint &rhs)
         {
-            if (!this->is_big) {
-                if (!rhs.is_big) {
+            if (!this->is_big)
+            {
+                if (!rhs.is_big)
+                {
                     if (rhs.base_repr < 0 && this->base_repr > std::numeric_limits<long long>::max() + rhs.base_repr ||
-                        rhs > 0 && this->base_repr < std::numeric_limits<long long>::min() + rhs.base_repr) {
+                        rhs > 0 && this->base_repr < std::numeric_limits<long long>::min() + rhs.base_repr)
+                    {
                         *this = subtract(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    } else {
+                    }
+                    else
+                    {
                         this->base_repr -= rhs.base_repr;
                     }
-                } else {
+                }
+                else
+                {
                     *this = subtract(std::to_string(this->base_repr), rhs.str);
                 }
-            } else {
-                *this = subtract(this->str, rhs.str);
+            }
+            else
+            {
+                if (!rhs.is_big)
+                {
+                    *this = subtract(this->str, std::to_string(rhs.base_repr));
+                }
+                else
+                {
+                    *this = subtract(this->str, rhs.str);
+                }
             }
             return *this;
         }
@@ -506,37 +548,33 @@ namespace bigint_ns {
         }
 
         // Actual string addition implementation
-        int str1_len = lhs.str.length();
-        int str2_len = rhs.str.length();
-        std::string sum = "";
+        int lhs_length = lhs.str.length();
+        int rhs_length = rhs.str.length();
+        int max_length = std::max(lhs_length, rhs_length);
+        std::string result;
+        int carry = 0;
 
-        int i, j, track_sum, carry = 0;
-        for (i = str1_len - 1; i >= 0; --i) {
-            for (j = str2_len - 1; j >= 0; --j) {
-                track_sum = ((int) lhs.str[i]) - 48 + ((int) rhs.str[j]) - 48 + carry;
-                carry = track_sum / 10;
-                sum = std::to_string(track_sum % 10) + sum;
-            }
+        for (int i = 0; i < max_length; ++i)
+        {
+            auto digit_1 = i < lhs_length ? char_to_int(lhs.str[lhs_length - 1 - i]) : 0;
+            auto digit_2 = i < rhs_length ? char_to_int(rhs.str[rhs_length - 1 - i]) : 0;
+
+            int sum = digit_1 + digit_2 + carry;
+            carry = sum / 10;
+            sum = sum % 10;
+
+            result.push_back(int_to_char(sum));
         }
 
-        if (i >= 0 && j < 0) {
-            for (; i >= 0; --i) {
-                track_sum = ((int) lhs.str[i]) - 48 + carry;
-                carry = track_sum / 10;
-                sum = std::to_string(track_sum % 10) + sum;
-            }
-        } else if (j >= 0 && i < 0) {
-            for (; j >= 0; --j) {
-                track_sum = ((int) rhs.str[j]) - 48 + carry;
-                carry = track_sum / 10;
-                sum = std::to_string(track_sum % 10) + sum;
-            }
-        }
-        if (carry) {
-            sum = std::to_string(carry) + sum;
+        if (carry > 0)
+        {
+            result.push_back(int_to_char(carry));
         }
 
-        return sum;
+        std::reverse(result.begin(), result.end());
+
+        return result;
+
     }
 
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
@@ -562,36 +600,36 @@ namespace bigint_ns {
         }
 
         // Actual string subtraction implementation
-        int str1_len = lhs.str.length();
-        int str2_len = rhs.str.length();
-        std::string sum = "";
+        int lhs_length = lhs.str.size();
+        int rhs_length = rhs.str.size();
+        std::string result;
+        int borrow = 0;
 
-        int i, j, track_sum, carry = 0;
+        // Subtract digits from right to left
+        for (int i = 0; i < lhs_length; ++i) {
+            int digit1 = char_to_int(lhs.str[lhs_length - 1 - i]);
+            int digit2 = (i < rhs_length) ? char_to_int(rhs.str[rhs_length - 1 - i]) : 0;
 
-        // first number is larger
-        int val1, val2;
-        for (i = str1_len - 1, j = str2_len - 1; i >= 0 || j >= 0; --i, --j) {
-            if (i >= 0) {
-                val1 = (int) (lhs.str[i] - 48);
+            // Apply borrow if necessary
+            digit1 -= borrow;
+
+            if (digit1 < digit2)
+            {
+                digit1 += 10;
+                borrow = 1;
             } else {
-                val1 = 0;
+                borrow = 0;
             }
-            if (j >= 0) {
-                val2 = (int) (rhs.str[j] - 48);
-            } else {
-                val2 = 0;
-            }
-            track_sum = val1 - val2 - carry;
-            if (track_sum < 0) {
-                track_sum += 10;
-                carry = 1;
-            } else {
-                carry = 0;
-            }
-            sum.insert(0, std::to_string(track_sum));
+
+            int diff = digit1 - digit2;
+            result.push_back(int_to_char(diff));
         }
 
-        return trim(sum);
+        // Remove leading zeros from the result
+        trim(result);
+
+        // The result is currently in reverse order
+        std::reverse(result.begin(), result.end());
     }
 
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
