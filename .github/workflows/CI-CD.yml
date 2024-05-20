@@ -23,4 +23,4 @@ jobs:
         run: cmake --build tests/bin/Debug --clean-first     
 
       - name: Run Tests
-        run: GTest_Run --gtest_color=no
+        run: tests/bin/Debug/BigInt_gtest --gtest_color=no
