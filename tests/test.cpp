@@ -51,7 +51,7 @@ TEST(BigInt_test, Subtraction_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "10000000000000000000";
-    ASSERT_EQ(bigint("30") - bigint("20"), "10");
+    ASSERT_EQ(bigint(30) - bigint(20), 10);
     ASSERT_EQ(small_number - 5, 9950);
     ASSERT_EQ(small_number - small_number, 0);
     ASSERT_EQ(huge_number_1 - 1, "123456788");

@@ -625,11 +625,12 @@ namespace bigint_ns {
             result.push_back(int_to_char(diff));
         }
 
-        // Remove leading zeros from the result
-        trim(result);
-
         // The result is currently in reverse order
         std::reverse(result.begin(), result.end());
+
+        // Remove leading zeros from the result
+
+        return trim(result);;
     }
 
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
