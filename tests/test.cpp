@@ -39,10 +39,14 @@ TEST(BigInt_test, Addition_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
+    bigint max_ll = LLONG_MAX;
     ASSERT_EQ(bigint("10") + bigint("20"), "30");
     ASSERT_EQ(small_number + 5, 9960);
     ASSERT_EQ(small_number + small_number, 19910);
     ASSERT_EQ(huge_number_1 + 1, "123456790");
+    ASSERT_EQ(huge_number_2 + 1, "10000000000000000000");
+
+    ASSERT_EQ( max_ll + 1, "9223372036854775808");
     ASSERT_EQ(huge_number_2 + 1, "10000000000000000000");
 }
 
@@ -122,6 +126,14 @@ TEST(BigInt_test, Comparison_Tests)
     ASSERT_TRUE(bigint(1) == "1");
     ASSERT_TRUE(bigint(1) >= "1");
     ASSERT_TRUE(bigint(1) <= "1");
+
+    ASSERT_TRUE(1 < huge_number_1);
+    ASSERT_FALSE(1 > huge_number_1);
+    ASSERT_TRUE(10 < huge_number_1);
+    ASSERT_TRUE("99" < huge_number_1);
+    ASSERT_TRUE(123456789 <= huge_number_1);
+    ASSERT_TRUE(123456789 == huge_number_1);
+    ASSERT_TRUE(123456789 >= huge_number_1);
 }
 
 TEST(BigInt_test, Modulus_Tests)
