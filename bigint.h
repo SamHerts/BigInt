@@ -35,7 +35,7 @@
 #include <stdexcept>
 #include <iostream>
 
-namespace bigint_ns {
+namespace BigInt {
 
     class bigint {
     private:
@@ -890,6 +890,6 @@ namespace bigint_ns {
         return true;
     }
 
-} // namespace::bigint_ns
+} // namespace::BigInt
 
 #endif /* BIGINT_H_ */

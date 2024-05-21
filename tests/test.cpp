@@ -6,7 +6,7 @@
 #include <string>
 #include "../bigint.h"
 
-using namespace bigint_ns;
+using namespace BigInt;
 
 class BigInt_test : public ::testing::Test
 {
