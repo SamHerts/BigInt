@@ -43,6 +43,12 @@ int main() {
     bigint a("123456789012345678901234567890");
     bigint b("987654321098765432109876543210");
 
+    bigint small_number = 10;
+    bigint big_number = 789456123;
+
+    bigint c = "123456789012345678901234567890";
+    bigint d = "-987654321098765432109876543210";
+
     bigint sum = a + b;
     bigint diff = a - b;
     bigint product = a * b;
