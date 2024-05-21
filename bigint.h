@@ -38,86 +38,6 @@
 namespace BigInt {
 
     class bigint {
-    private:
-
-        // Function Definitions for Internal Uses
-        static std::string trim(std::string);
-
-        static bigint add(const bigint &, const bigint &);
-
-        static bigint subtract(const bigint &, const bigint &);
-
-        static bigint multiply(const bigint &, const bigint &);
-
-        static bigint divide(const bigint &, const bigint &);
-
-        inline static bigint mod(const bigint &lhs, const bigint &rhs)
-        {
-            if (lhs < rhs) {
-                return lhs;
-            }
-            if (lhs == rhs) {
-                return 0;
-            }
-
-            if (rhs == 2)
-            {
-                return !is_even(lhs);
-            }
-//            if (rhs == 3)
-//            {
-//                auto sum = sum_of_digits(lhs);
-//                while (sum > 10)
-//                    sum = sum_of_digits(sum);
-//                return sum % 3;
-//            }
-
-//            auto div = lhs / rhs;
-//            auto mult = div * rhs;
-//            auto sub = lhs - mult;
-//
-//            return sub;
-
-            return lhs - ((lhs / rhs) * rhs);
-        }
-
-        static std::string shortDivide(std::string, unsigned long long int);
-
-        static bool is_bigint(const std::string &);
-
-        inline static int char_to_int(const char input)
-        {
-            return input - '0';
-        }
-
-        inline static int int_to_char(const int input)
-        {
-            return input + '0';
-        }
-
-        inline static bigint negate(bigint input)
-        {
-            return input.str.insert(0, "-");
-        }
-        inline static bool less_than(const bigint& lhs, const bigint& rhs)
-        {
-            if (is_negative(lhs) && is_negative(rhs))
-            {
-                return less_than(abs(rhs), abs(lhs));
-            }
-
-            if (is_negative(lhs) || is_negative(rhs))
-            {
-                return is_negative(lhs);
-            }
-
-            if(lhs.str.length() == rhs.str.length())
-            {
-                return lhs.str < rhs.str;
-            }
-
-            return lhs.str.length() < rhs.str.length();
-        }
 
     public:
         bool is_big = false;
@@ -129,8 +49,7 @@ namespace BigInt {
         bigint(const std::string &s)
         {
             if (!is_bigint(s))
-                throw std::runtime_error(
-                        "Invalid Big Integer.");  
+                throw std::runtime_error("Invalid Big Integer.");
             str = s;
             is_big = true;
         }
@@ -490,6 +409,74 @@ namespace BigInt {
                 for (sum = 0; base > 0; sum += base % 10, base /= 10);
             }
             return sum;
+        }
+
+    private:
+
+        // Function Definitions for Internal Uses
+        static std::string trim(std::string);
+
+        static bigint add(const bigint &, const bigint &);
+
+        static bigint subtract(const bigint &, const bigint &);
+
+        static bigint multiply(const bigint &, const bigint &);
+
+        static bigint divide(const bigint &, const bigint &);
+
+        inline static bigint mod(const bigint &lhs, const bigint &rhs)
+        {
+            if (lhs < rhs) {
+                return lhs;
+            }
+            if (lhs == rhs) {
+                return 0;
+            }
+
+            if (rhs == 2)
+            {
+                return !is_even(lhs);
+            }
+
+            return lhs - ((lhs / rhs) * rhs);
+        }
+
+        static std::string shortDivide(std::string, unsigned long long int);
+
+        static bool is_bigint(const std::string &);
+
+        inline static int char_to_int(const char input)
+        {
+            return input - '0';
+        }
+
+        inline static int int_to_char(const int input)
+        {
+            return input + '0';
+        }
+
+        inline static bigint negate(bigint input)
+        {
+            return input.str.insert(0, "-");
+        }
+        inline static bool less_than(const bigint& lhs, const bigint& rhs)
+        {
+            if (is_negative(lhs) && is_negative(rhs))
+            {
+                return less_than(abs(rhs), abs(lhs));
+            }
+
+            if (is_negative(lhs) || is_negative(rhs))
+            {
+                return is_negative(lhs);
+            }
+
+            if(lhs.str.length() == rhs.str.length())
+            {
+                return lhs.str < rhs.str;
+            }
+
+            return lhs.str.length() < rhs.str.length();
         }
     };
 
