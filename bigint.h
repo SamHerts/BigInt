@@ -871,7 +871,7 @@ namespace bigint_ns {
 
     inline bool bigint::is_prime(const bigint &s)
     {
-        if (s.is_negative(s) || s == 1)
+        if (is_negative(s) || s == 1)
             return false;
 
         if (s == 2 || s == 3 || s == 5)
