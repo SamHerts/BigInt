@@ -72,6 +72,12 @@ namespace bigint_ns {
 //                return sum % 3;
 //            }
 
+//            auto div = lhs / rhs;
+//            auto mult = div * rhs;
+//            auto sub = lhs - mult;
+//
+//            return sub;
+
             return lhs - ((lhs / rhs) * rhs);
         }
 
@@ -92,6 +98,25 @@ namespace bigint_ns {
         inline static bigint negate(bigint input)
         {
             return input.str.insert(0, "-");
+        }
+        inline static bool less_than(const bigint& lhs, const bigint& rhs)
+        {
+            if (is_negative(lhs) && is_negative(rhs))
+            {
+                return less_than(abs(rhs), abs(lhs));
+            }
+
+            if (is_negative(lhs) || is_negative(rhs))
+            {
+                return is_negative(lhs);
+            }
+
+            if(lhs.str.length() == rhs.str.length())
+            {
+                return lhs.str < rhs.str;
+            }
+
+            return lhs.str.length() < rhs.str.length();
         }
 
     public:
@@ -234,37 +259,22 @@ namespace bigint_ns {
 
         bigint operator*=(const bigint &rhs)
         {
-            if (!this->is_big) {
-                if (!rhs.is_big) {
-                    if ((this->base_repr == -1 && rhs.base_repr == std::numeric_limits<long long>::min()) ||
-                        (rhs.base_repr == -1 && this->base_repr == std::numeric_limits<long long>::min()) ||
-                        (rhs.base_repr != 0 &&
-                         this->base_repr > std::numeric_limits<long long>::max() / rhs.base_repr) ||
-                        (rhs.base_repr != 0 &&
-                         this->base_repr < std::numeric_limits<long long>::min() / rhs.base_repr))
-                    {
-                        *this = multiply(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    }
-                    else
-                    {
-                        this->base_repr *= rhs.base_repr;
-                    }
-                }
-                else
-                {
-                    *this = multiply(std::to_string(this->base_repr), rhs.str);
-                }
+            if (this->is_big || rhs.is_big)
+            {
+                *this = multiply(this->is_big ? this->str : std::to_string(this->base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
+            }
+            else if ((this->base_repr == -1 && rhs.base_repr == std::numeric_limits<long long>::min()) ||
+                     (rhs.base_repr == -1 && this->base_repr == std::numeric_limits<long long>::min()) ||
+                     (rhs.base_repr != 0 &&
+                      this->base_repr > std::numeric_limits<long long>::max() / rhs.base_repr) ||
+                     (rhs.base_repr != 0 &&
+                      this->base_repr < std::numeric_limits<long long>::min() / rhs.base_repr))
+            {
+                *this = multiply(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
             }
             else
             {
-                if (!rhs.is_big)
-                {
-                    *this = multiply(this->str, std::to_string(rhs.base_repr));
-                }
-                else
-                {
-                    *this = multiply(this->str, rhs.str);
-                }
+                this->base_repr *= rhs.base_repr;
             }
             return *this;
         }
@@ -278,21 +288,15 @@ namespace bigint_ns {
 
         bigint &operator/=(const bigint &rhs)
         {
-            if (!this->is_big) {
-                if (!rhs.is_big) {
-                    this->base_repr /= rhs.base_repr;
-                } else {
-                    *this = divide(std::to_string(this->base_repr), rhs.str);
-                }
-            } else {
-                if (!rhs.is_big)
-                {
-                    *this = divide( this->str, std::to_string(rhs.base_repr));
-                }
-                else{
-                    *this = divide(this->str, rhs.str);
-                }
+            if (this->is_big || rhs.is_big)
+            {
+                *this = divide(this->is_big ? this->str : std::to_string(this->base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
             }
+            else
+            {
+                this->base_repr /= rhs.base_repr;
+            }
+
             return *this;
         }
 
@@ -305,19 +309,13 @@ namespace bigint_ns {
 
         bigint operator%=(const bigint &rhs)
         {
-            if (!this->is_big) {
-                if (!rhs.is_big) {
-                    this->base_repr %= rhs.base_repr;
-                } else {
-                    *this = mod(std::to_string(this->base_repr), rhs.str);
-                }
-            } else {
-                if (!rhs.is_big) {
-                    *this = mod(this->str, std::to_string(rhs.base_repr));
-                }
-                else {
-                    *this = mod(this->str, rhs.str);
-                }
+            if (this->is_big || rhs.is_big)
+            {
+                *this = mod(this->is_big ? this->str : std::to_string(this->base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
+            }
+            else
+            {
+                this->base_repr %= rhs.base_repr;
             }
 
             return *this;
@@ -374,38 +372,15 @@ namespace bigint_ns {
         // strict weak ordering.
         friend bool operator<(const bigint &lhs, const bigint &rhs)
         {
-            if (!lhs.is_big) {
-                if (!rhs.is_big) {
-                    return lhs.base_repr < rhs.base_repr;
-                }
-                // TODO: Implement half
-                auto temp = std::to_string(lhs.base_repr);
-                if(temp.length() == rhs.str.length())
-                {
-                    return temp < rhs.str;
-                }
-
-                return temp.length() < rhs.str.length();
-            }
-
-            if (is_negative(lhs) && is_negative(rhs)) {
-                return abs(lhs) > abs(rhs);
-            }
-
-            if (is_negative(lhs)) {
-                return true;
-            }
-
-            if (is_negative(rhs)) {
-                return false;
-            }
-
-            if(lhs.str.length() == rhs.str.length())
+            if (lhs.is_big || rhs.is_big)
             {
-                return lhs.str < rhs.str;
+                return less_than(lhs.is_big ? lhs.str : std::to_string(lhs.base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
             }
 
-            return lhs.str.length() < rhs.str.length();
+            return lhs.base_repr < rhs.base_repr;
+
+
+
         }
 
         friend bool operator>(const bigint &l, const bigint &r)
@@ -727,67 +702,29 @@ namespace bigint_ns {
             return 0;
         }
 
-        // As result can be very large store it in string
-        std::string ans;
-
-        // Find prefix of number that is larger
-        // than divisor.
-        int idx = 0;
-        bigint temp = char_to_int(numerator.str[idx]);
-        while (idx < (numerator.str.size() - 1) && temp < denominator) {
-            temp = temp * 10 + (char_to_int(numerator.str[++idx]));
-        }
-        // Repeatedly divide divisor with temp. After
-        // every division, update temp to include one
-        // more digit.
-        while ((numerator.str.size() - 1) > idx)
+        bigint count = "0";
+        bigint temp = numerator;
+        while(temp >= denominator)
         {
-            // Store result in answer i.e. temp / divisor
-            ans += int_to_char(int(temp / int(denominator)));
-
-            // Take next digit of number
-            temp = char_to_int(int((temp % denominator) * 10 + numerator.str[++idx]));
+            int lenDiff = temp.str.length() - denominator.str.length();
+            if(lenDiff > 0 && temp.str[0] > denominator.str[0])
+            {
+                count += pow(10, lenDiff);
+                temp -= denominator * pow(10, lenDiff);
+            }
+            else if(lenDiff > 0)
+            {
+                count += pow(10, lenDiff-1);
+                temp -= denominator * pow(10, lenDiff-1);
+            }
+            else
+            {
+                count++;
+                temp -=  denominator;
+            }
         }
 
-        ans += int_to_char(int(temp / int(denominator)));
-
-        // If divisor is greater than number
-        if (ans.length() == 0)
-            return "0";
-
-        // else return ans
-        return ans;
-
-
-        // TODO: Implement shortDivide
-//        if(str2.length() <= 19) {
-//            std::stringstream strstrm(str2);
-//            unsigned long long int int_str2 = 0;
-//            strstrm >> int_str2;
-//            ans = shortDivide(str1, int_str2);
-//        }
-    }
-
-    inline std::string bigint::shortDivide(std::string s1, unsigned long long int divisor)
-    {     // return arithmetic division of str1/str2
-        std::string ans;
-        int idx = 0;
-        long long int temp = s1[idx] - '0';
-
-        while (temp < divisor) {
-            temp = temp * 10 + (s1[++idx] - '0');
-            if (idx >= s1.length())
-                break;
-        }
-        while (s1.length() > idx) {
-            ans += (temp / divisor) + '0';
-            temp = (temp % divisor) * 10 + s1[++idx] - '0';
-        }
-
-        if (ans.length() == 0)
-            return "0";
-
-        return ans;
+        return count;
     }
 
 

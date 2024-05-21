@@ -69,9 +69,11 @@ TEST(BigInt_test, Multiplication_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
+    bigint max_ll = LLONG_MAX;
     ASSERT_EQ(bigint("30") * bigint("20"), "600");
     ASSERT_EQ(small_number * 5, 49775);
     ASSERT_EQ(small_number * small_number, 99102025);
+    ASSERT_EQ(small_number * max_ll, "91818668626889293158685");
     ASSERT_EQ(huge_number_1 * 2, "246913578");
     ASSERT_EQ(huge_number_2 * huge_number_2, "99999999999999999980000000000000000001");
 }
@@ -82,10 +84,11 @@ TEST(BigInt_test, Division_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
-    ASSERT_EQ(bigint("30") / bigint("20"), "1");
+    ASSERT_EQ(bigint("30") / bigint("20"), 1);
     ASSERT_EQ(small_number / 5, 1991);
     ASSERT_EQ(small_number / 181, 55);
     ASSERT_EQ(huge_number_1 / 2, 61728394);
+    ASSERT_EQ(huge_number_1 / 3, 41152263);
     ASSERT_EQ(huge_number_2 / huge_number_1, 81000000737);
 }
 
