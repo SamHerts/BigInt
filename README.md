@@ -8,7 +8,7 @@
 
 ## Features
 
-- **Unlimited Integer Size**: Create integers of any size, limited only by available memory.
+- **Arbitrary Integer Size**: Create integers of any size, limited only by available memory.
 - **Basic Arithmetic Operations**: Support for addition, subtraction, multiplication, and division.
 - **Advanced Computations**: Support for modulos, Square Roots, Powers, and Logarithms
 - **Comparison Operators**: Full set of comparison operators (==, !=, <, <=, >, >=).
