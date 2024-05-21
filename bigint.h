@@ -89,6 +89,11 @@ namespace bigint_ns {
             return input + '0';
         }
 
+        inline static void negate(bigint& input)
+        {
+            input.str.insert(0, "-");
+        }
+
     public:
         bool is_big = false;
         std::string str;
@@ -109,7 +114,7 @@ namespace bigint_ns {
         {
             int temp = static_cast<int>(c);
             if (isdigit(temp)) {
-                base_repr = temp - '0';
+                base_repr = char_to_int(c);
             } else {
                 throw std::runtime_error("Invalid Big Integer has been fed.");
             }
@@ -179,35 +184,18 @@ namespace bigint_ns {
 
         bigint operator+=(const bigint &rhs)
         {
-            if (!this->is_big)
+            if (this->is_big || rhs.is_big)
             {
-                if (!rhs.is_big)
-                {
-                    if (rhs.base_repr > 0 && this->base_repr > std::numeric_limits<long long>::max() - rhs.base_repr ||
-                        rhs < 0 && this->base_repr < std::numeric_limits<long long>::min() - rhs.base_repr)
-                    {
-                        *this = add(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    }
-                    else
-                    {
-                        this->base_repr += rhs.base_repr;
-                    }
-                }
-                else
-                {
-                    *this = add(std::to_string(this->base_repr), rhs.str);
-                }
+                *this = add(this->is_big ? this->str : std::to_string(this->base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
+            }
+            else if (rhs.base_repr > 0 && this->base_repr > std::numeric_limits<long long>::max() - rhs.base_repr ||
+                rhs < 0 && this->base_repr < std::numeric_limits<long long>::min() - rhs.base_repr)
+            {
+                *this = add(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
             }
             else
             {
-                if (!rhs.is_big)
-                {
-                    *this = add(this->str, std::to_string(rhs.base_repr));
-                }
-                else
-                {
-                    *this = add(this->str, rhs.str);
-                }
+                this->base_repr += rhs.base_repr;
             }
             return *this;
         }
@@ -387,15 +375,12 @@ namespace bigint_ns {
 
         friend bool operator==(const bigint &l, const bigint &r)
         {
-            if (!l.is_big)
+            if (l.is_big || r.is_big)
             {
-                if (!r.is_big)
-                {
-                    return l.base_repr == r.base_repr;
-                }
-                return std::to_string(l.base_repr) == r.str;
+                return (l.is_big ? l.str : std::to_string(l.base_repr)) ==
+                       (r.is_big ? r.str : std::to_string(r.base_repr));
             }
-            return l.str == r.str;
+            return l.base_repr == r.base_repr;
         }
 
         friend bool operator!=(const bigint &l, const bigint &r)
@@ -677,7 +662,9 @@ namespace bigint_ns {
             return (abs(lhs) * abs(lhs));
         }
         if (is_negative(lhs) || is_negative(rhs)) {
-            return (abs(lhs) * abs(rhs)) * -1;
+            bigint temp = (abs(lhs) * abs(rhs));
+            temp.str.insert(0, "-");
+            return temp;
         }
 
         std::string ans = "";
@@ -724,7 +711,8 @@ namespace bigint_ns {
         if (denominator == 0) {
             throw std::domain_error("Attempted to divide by zero.");
         }
-        if (numerator == denominator) {
+        if (numerator == denominator)
+        {
             return 1;
         }
 
@@ -742,7 +730,9 @@ namespace bigint_ns {
         }
         else if (is_negative(numerator) || is_negative(denominator))
         {
-            return (abs(numerator) / abs(denominator)) * -1;
+            bigint temp = (abs(numerator) / abs(denominator));
+            temp.str.insert(0, "-");
+            return temp;
         }
 
         if (denominator > numerator)
