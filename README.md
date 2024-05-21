@@ -1,5 +1,7 @@
 # BigInt
 
+![example workflow](https://github.com/SamHerts/BigInt/actions/workflows/CI-CD.yml/badge.svg)
+
 ## Overview
 
 **BigInt** is a single-header C++ library designed to facilitate the creation and manipulation of arbitrary-sized integers. This lightweight and efficient library provides an easy-to-use interface for handling large integers that exceed the limits of built-in data types.
