@@ -89,9 +89,9 @@ namespace bigint_ns {
             return input + '0';
         }
 
-        inline static void negate(bigint& input)
+        inline static bigint negate(bigint input)
         {
-            input.str.insert(0, "-");
+            return input.str.insert(0, "-");
         }
 
     public:
@@ -209,35 +209,18 @@ namespace bigint_ns {
 
         bigint operator-=(const bigint &rhs)
         {
-            if (!this->is_big)
+            if (this->is_big || rhs.is_big)
             {
-                if (!rhs.is_big)
-                {
-                    if (rhs.base_repr < 0 && this->base_repr > std::numeric_limits<long long>::max() + rhs.base_repr ||
-                        rhs > 0 && this->base_repr < std::numeric_limits<long long>::min() + rhs.base_repr)
-                    {
-                        *this = subtract(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-                    }
-                    else
-                    {
-                        this->base_repr -= rhs.base_repr;
-                    }
-                }
-                else
-                {
-                    *this = subtract(std::to_string(this->base_repr), rhs.str);
-                }
+                *this = subtract(this->is_big ? this->str : std::to_string(this->base_repr), rhs.is_big ? rhs.str : std::to_string(rhs.base_repr));
+            }
+            else if ((rhs.base_repr < 0 && this->base_repr > std::numeric_limits<long long>::max() + rhs.base_repr) ||
+                    (rhs > 0 && this->base_repr < std::numeric_limits<long long>::min() + rhs.base_repr))
+            {
+                *this = subtract(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
             }
             else
             {
-                if (!rhs.is_big)
-                {
-                    *this = subtract(this->str, std::to_string(rhs.base_repr));
-                }
-                else
-                {
-                    *this = subtract(this->str, rhs.str);
-                }
+                this->base_repr -= rhs.base_repr;
             }
             return *this;
         }
@@ -560,13 +543,16 @@ namespace bigint_ns {
 
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
-        if (is_negative(lhs) && is_negative(rhs)) {
-            return (abs(lhs) + abs(lhs)) * -1;
+        if (is_negative(lhs) && is_negative(rhs))
+        {
+            return negate(add(abs(lhs) ,abs(rhs)));
         }
-        if (is_negative(lhs)) {
+        if (is_negative(lhs))
+        {
             return rhs - abs(lhs);
         }
-        if (is_negative(rhs)) {
+        if (is_negative(rhs))
+        {
             return lhs - abs(rhs);
         }
 
@@ -602,24 +588,29 @@ namespace bigint_ns {
 
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
     {
-        if (lhs == rhs) {
+        if (lhs == rhs)
+        {
             return 0;
         }
 
-        if (is_negative(lhs) && is_negative(rhs)) {
-            return abs(rhs) - abs(lhs);
+        if (is_negative(lhs) && is_negative(rhs))
+        {
+            return subtract(abs(rhs), abs(lhs));
         }
 
-        if (is_negative(rhs)) {
-            return lhs + abs(rhs);
+        if (is_negative(rhs))
+        {
+            return add(lhs, abs(rhs));
         }
 
-        if (is_negative(lhs)) {
-            return lhs + rhs;
+        if (is_negative(lhs))
+        {
+            return add(lhs, negate(rhs));
         }
 
-        if (lhs < rhs) {
-            return (rhs - lhs) * -1;
+        if (lhs < rhs)
+        {
+            return negate(subtract(rhs, lhs));
         }
 
         // Actual string subtraction implementation
@@ -662,9 +653,7 @@ namespace bigint_ns {
             return (abs(lhs) * abs(lhs));
         }
         if (is_negative(lhs) || is_negative(rhs)) {
-            bigint temp = (abs(lhs) * abs(rhs));
-            temp.str.insert(0, "-");
-            return temp;
+            return negate(abs(lhs) * abs(rhs));
         }
 
         std::string ans = "";
@@ -726,13 +715,11 @@ namespace bigint_ns {
 
         if (is_negative(numerator) && is_negative(denominator))
         {
-            return abs(numerator) / abs(denominator);
+            return divide(abs(numerator), abs(denominator));
         }
         else if (is_negative(numerator) || is_negative(denominator))
         {
-            bigint temp = (abs(numerator) / abs(denominator));
-            temp.str.insert(0, "-");
-            return temp;
+            return negate(divide(abs(numerator), abs(denominator)));
         }
 
         if (denominator > numerator)
