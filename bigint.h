@@ -34,15 +34,12 @@
 #include <limits>
 #include <stdexcept>
 #include <iostream>
+#include <functional>
 
 namespace BigInt {
 
     class bigint {
-
     public:
-        bool is_big = false;
-        std::string str;
-        long long int base_repr{};
 
         bigint() = default;
 
@@ -64,35 +61,21 @@ namespace BigInt {
             }
         }
 
-        bigint(unsigned int n) : bigint(static_cast<long long>(n))
-        {}
+        bigint(unsigned int n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(int n) : bigint(static_cast<long long>(n))
-        {}
+        bigint(int n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(long n) : bigint(static_cast<long long>(n))
-        {}
+        bigint(long n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(double n) : bigint(static_cast<long long>(n))
-        {}
+        bigint(double n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(long long n)
-        {
-            base_repr = n;
-        }
+        bigint(long long n) : base_repr(n) {}
 
-        bigint(const bigint &n)
-        {
-            is_big = n.is_big;
-            if (is_big)
-                str = n.str;
-            else
-                base_repr = n.base_repr;
-        }
+        bigint(const bigint &n) { *this = n; }
 
         bigint(const char *string) : bigint(std::string(string)) {}
 
-        bigint &operator=(const bigint &other)
+        bigint& operator=(const bigint& other)
         {
             if (this == &other)
                 return *this;
@@ -112,7 +95,7 @@ namespace BigInt {
         explicit operator int() const
         {
             if (!is_big) {
-                return base_repr;
+                return static_cast<int>(base_repr);
             }
             std::stringstream ss(str);
             int num;
@@ -286,9 +269,6 @@ namespace BigInt {
         friend bool operator!=(const bigint &l, const bigint &r)
         { return !(l == r); }
 
-        // Relational comparisons:
-        // implementing a lexicographical comparison which induces a
-        // strict weak ordering.
         friend bool operator<(const bigint &lhs, const bigint &rhs)
         {
             if (lhs.is_big || rhs.is_big)
@@ -311,14 +291,15 @@ namespace BigInt {
         friend bool operator>=(const bigint &l, const bigint &r)
         { return !(l < r); }
 
-
         explicit operator bool() const
         {
             if (!this->is_big) {
                 return this->base_repr;
             }
-            return this->str != "0";
+            return this->str != "0" || !this->str.empty();
         }
+
+        friend std::hash<bigint>;
 
         inline static bigint pow(const bigint &base, const bigint &exponent)
         {
@@ -376,11 +357,9 @@ namespace BigInt {
 
         inline static bool is_even(const bigint &input)
         {
-            if (!input.is_big) {
-                bool temp = input.base_repr & 1;
-                bool temp2 = !temp;
-                return temp2;
-//            return !(input.base_repr & 1);
+            if (!input.is_big)
+            {
+                return !(input.base_repr & 1);
             }
             return (input.str.ends_with("0") || input.str.ends_with("2") || input.str.ends_with("4") ||
                     input.str.ends_with("6") || input.str.ends_with("8"));
@@ -400,7 +379,7 @@ namespace BigInt {
             {
                 for (auto c : input.str)
                 {
-                    sum += (c - '0');
+                    sum += char_to_int(c);
                 }
             }
             else
@@ -412,6 +391,9 @@ namespace BigInt {
         }
 
     private:
+        bool is_big = false;
+        std::string str;
+        long long int base_repr{};
 
         // Function Definitions for Internal Uses
         static std::string trim(std::string);
@@ -459,6 +441,7 @@ namespace BigInt {
         {
             return input.str.insert(0, "-");
         }
+
         inline static bool less_than(const bigint& lhs, const bigint& rhs)
         {
             if (is_negative(lhs) && is_negative(rhs))
@@ -491,17 +474,6 @@ namespace BigInt {
         }
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
     }
-
-    struct KeyHasher {
-        std::size_t operator()(const bigint &k) const
-        {
-            using std::size_t;
-            using std::hash;
-            using std::string;
-
-            return (hash<string>()(k.str) >> 1) ^ hash<long long>()(k.base_repr) << 1;
-        }
-    };
 
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
@@ -878,5 +850,15 @@ namespace BigInt {
     }
 
 } // namespace::BigInt
+
+namespace std {
+    template<>
+    struct hash<BigInt::bigint> {
+        std::size_t operator()(const BigInt::bigint& input) const
+        {
+            return input.is_big ?  std::hash<std::string>()(input.str) : std::hash<long long>()(input.base_repr);
+        }
+    };
+}
 
 #endif /* BIGINT_H_ */
