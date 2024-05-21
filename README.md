@@ -25,7 +25,7 @@ Ensure you have a C++20 compatible compiler.
 
 Simply include the header file in your project.
 
-1. Download `BigInt.hpp`.
+1. Download `BigInt.h`.
 2. Include it in your source file:
     ```cpp
     #include "BigInt.hpp"
