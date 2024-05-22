@@ -19,7 +19,7 @@
 
 ### Prerequisites
 
-Ensure you have a C++20 compatible compiler.
+Ensure you have a C++11 compatible compiler.
 
 ### Installation
 
@@ -138,6 +138,17 @@ Constructors
 ### Stream Operators
 
     friend std::ostream& operator<<(std::ostream& os, const BigInt& num): Output stream.    
+
+### Build and Run Unit Tests
+
+```bash
+$ git clone https://github.com/SamHerts/BigInt.git
+$ cd BigInt
+$ cd tests
+$ cmake .
+$ make
+$ ./BigInt_gtest
+```
 
 ### Contributing
 
