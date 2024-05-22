@@ -361,8 +361,13 @@ namespace BigInt {
             {
                 return !(input.base_repr & 1);
             }
+#if __cplusplus >= 202002L
             return (input.str.ends_with("0") || input.str.ends_with("2") || input.str.ends_with("4") ||
                     input.str.ends_with("6") || input.str.ends_with("8"));
+#else
+            auto back = input.str.back();
+            return back == '0' || back == '2' || back == '4' || back == '6' || back == '8';
+#endif
         }
 
         inline static bool is_negative(const bigint &input)
@@ -422,8 +427,6 @@ namespace BigInt {
 
             return lhs - ((lhs / rhs) * rhs);
         }
-
-        static std::string shortDivide(std::string, unsigned long long int);
 
         static bool is_bigint(const std::string &);
 
@@ -506,15 +509,13 @@ namespace BigInt {
             carry = sum / 10;
             sum = sum % 10;
 
-            result.push_back(int_to_char(sum));
+            result.insert(result.begin(), int_to_char(sum));
         }
 
         if (carry > 0)
         {
-            result.push_back(int_to_char(carry));
+            result.insert(result.begin(), int_to_char(carry));
         }
-
-        std::reverse(result.begin(), result.end());
 
         return result;
 
@@ -570,13 +571,8 @@ namespace BigInt {
             }
 
             int diff = digit1 - digit2;
-            result.push_back(int_to_char(diff));
+            result.insert(result.begin(), int_to_char(diff));
         }
-
-        // The result is currently in reverse order
-        std::reverse(result.begin(), result.end());
-
-        // Remove leading zeros from the result
 
         return trim(result);;
     }
