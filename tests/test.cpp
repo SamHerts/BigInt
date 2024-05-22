@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <climits>
 #include "../bigint.h"
 
 using namespace BigInt;
