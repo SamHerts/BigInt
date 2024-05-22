@@ -8,7 +8,7 @@
 
 ## Features
 
-- **Unlimited Integer Size**: Create integers of any size, limited only by available memory.
+- **Arbitrary Integer Size**: Create integers of any size, limited only by available memory.
 - **Basic Arithmetic Operations**: Support for addition, subtraction, multiplication, and division.
 - **Advanced Computations**: Support for modulos, Square Roots, Powers, and Logarithms
 - **Comparison Operators**: Full set of comparison operators (==, !=, <, <=, >, >=).
@@ -42,6 +42,12 @@ Below is a basic example demonstrating the usage of the library.
 int main() {
     bigint a("123456789012345678901234567890");
     bigint b("987654321098765432109876543210");
+
+    bigint small_number = 10;
+    bigint big_number = 789456123;
+
+    bigint c = "123456789012345678901234567890";
+    bigint d = "-987654321098765432109876543210";
 
     bigint sum = a + b;
     bigint diff = a - b;
