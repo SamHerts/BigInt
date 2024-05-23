@@ -19,7 +19,7 @@
 
 ### Prerequisites
 
-Ensure you have a C++11 compatible compiler.
+Ensure you have a C++11 (or higher) compatible compiler.
 
 ### Installation
 
