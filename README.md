@@ -1,6 +1,6 @@
 # BigInt
 
-![example workflow](https://github.com/SamHerts/BigInt/actions/workflows/CI-CD.yml/badge.svg)
+![example workflow](https://github.com/SamHerts/BigInt/actions/workflows/CI-CD.yml/badge.svg)  ![c++]( https://img.shields.io/badge/-c++11-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++20-blue?logo=c%2B%2B)
 
 ## Overview
 
