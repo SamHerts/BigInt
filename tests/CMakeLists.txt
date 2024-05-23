@@ -16,7 +16,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# 'Google_Tests_run' is the target name
+# 'BigInt_gtest' is the target name
 # Add more tests and their dependencies here
 file(GLOB Test_Sources *.cpp)
 add_executable(BigInt_gtest ${Test_Sources})
