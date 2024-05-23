@@ -76,12 +76,19 @@ Constructors
 ### Operators
 
     BigInt operator+(const BigInt& rhs) const: Addition.
+    BigInt operator+=(const BigInt& rhs)
 
     BigInt operator-(const BigInt& rhs) const: Subtraction.
+    BigInt operator-=(const BigInt& rhs)
 
     BigInt operator*(const BigInt& rhs) const: Multiplication.
+    BigInt operator*=(const BigInt& rhs)
 
     BigInt operator/(const BigInt& rhs) const: Division.
+    BigInt operator/=(const BigInt& rhs)
+
+    BigInt operator%(const BigInt& rhs) const: Modulo.
+    BigInt operator%=(const BigInt& rhs)
 
     bool operator==(const BigInt& rhs) const: Equality.
 
@@ -93,45 +100,43 @@ Constructors
 
     bool operator>(const BigInt& rhs) const: Greater than.
 
-    bool operator>=(const BigInt& rhs) const: Greater than or equal to.
-
-    bool operator%(const bigint &rhs) const: Modulo.
+    bool operator>=(const BigInt& rhs) const: Greater than or equal to.    
 
 ### Member Functions
 
-    inline  bigint pow(const bigint &base, const bigint &exponent)
+    bigint pow(const bigint &base, const bigint &exponent): Returns the base raised to the exponent
 
-    bigint maximum(const bigint &lhs, const bigint &rhs)
+    bigint maximum(const bigint &lhs, const bigint &rhs): Returns the larger number
     
-    bigint minimum(const bigint &lhs, const bigint &rhs)
+    bigint minimum(const bigint &lhs, const bigint &rhs): Returns the smaller number
     
-    bigint abs(const bigint &s)
+    bigint abs(const bigint &s): Returns the absolute (positive) value
     
-    bigint sqrt(const bigint &);
+    bigint sqrt(const bigint &): Returns the square root
     
-    bigint log2(const bigint &);
+    bigint log2(const bigint &): Returns the binary log
     
-    bigint log10(const bigint &);
+    bigint log10(const bigint &): Returns the decimal log
     
-    bigint logwithbase(const bigint &, const bigint &);
+    bigint logwithbase(const bigint &, const bigint &): Returns an arbitrary integer based log
     
-    bigint antilog2(const bigint &);
+    bigint antilog2(const bigint &): Returns the binary anti-log
     
-    bigint antilog10(const bigint &);
+    bigint antilog10(const bigint &): Returns the decimal anti-log
     
-    void swap(bigint &, bigint &);
+    void swap(bigint &, bigint &)
     
-    bigint gcd(const bigint &, const bigint &);
+    bigint gcd(const bigint &, const bigint &): Returns the greatest common divisor
     
-    bigint lcm(const bigint &lhs, const bigint &rhs)
+    bigint lcm(const bigint &lhs, const bigint &rhs): Returns the least common multiple
     
-    bigint factorial(const bigint &);
+    bigint factorial(const bigint &): Returns n! = (n)*(n-1)...(n-k)
     
     bool is_even(const bigint &input)
     
     bool is_negative(const bigint &input)
     
-    bool is_prime(const bigint &);
+    bool is_prime(const bigint &): Rudimentary prime check based on divisibility loop
     
     bigint sum_of_digits(const bigint& input)
 
