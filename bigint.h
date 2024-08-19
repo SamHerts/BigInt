@@ -401,8 +401,9 @@ namespace BigInt {
 
     private:
         bool is_big = false;
-        std::string str;
+//        std::string str;
         long long int base_repr{};
+        std::vector<long long> vec{};
 
         // Function Definitions for Internal Uses
         static std::string trim(std::string);
