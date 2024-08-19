@@ -761,7 +761,7 @@ namespace BigInt {
     inline bigint bigint::log10(const bigint &input)
     {
         if (is_negative(input) || input == 0)
-            throw std::domain_error("Invalid input for natural log");
+            throw std::domain_error("Invalid input for log base 10");
 
         if (input == 1)
             return 0;
