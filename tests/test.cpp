@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <climits>
+#include <chrono>
+
 #include "../bigint.h"
 
 using namespace BigInt;
@@ -158,5 +160,65 @@ TEST(BigInt_test, Modulus_Tests)
     ASSERT_EQ(huge_number_1 % 5, 4);
 
     ASSERT_EQ(huge_number_1 % small_number, 4834);
+}
+
+TEST(BigInt_test_Addition_Tests_Test, Speed_Tests)
+{
+    using std::chrono::high_resolution_clock;
+    using std::chrono::microseconds;
+    using std::chrono::duration_cast;
+    for (int number : {10 ,20, 30, 40, 50 ,60 ,70, 80, 90 ,100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200}) {
+
+
+        size_t number_count = 10;
+        size_t number_size = number;
+
+        std::vector<bigint> huge_numbers;
+        huge_numbers.reserve(number_count);
+        for (int i = 0; i < 10; ++i) {
+            huge_numbers.emplace_back(bigint::random(number_size));
+        }
+        std::sort(huge_numbers.begin(), huge_numbers.end(), std::greater<>());
+
+        bigint answer = 0;
+
+        // Addition timing
+        auto t1 = high_resolution_clock::now();
+        for (int i = 0; i < huge_numbers.size() - 1; ++i) {
+            answer = huge_numbers[i] + huge_numbers[i + 1];
+//        std::cout << huge_numbers[i] << " + " << huge_numbers[i + 1] << " = " << answer << std::endl;
+        }
+        auto t2 = high_resolution_clock::now();
+
+        std::cout << number_count - 1 << " Additions: " << "[" << number_size << "] "
+                  << duration_cast<microseconds>(t2 - t1).count() ;
+
+        // Subtraction timing
+        t1 = high_resolution_clock::now();
+        for (int i = 0; i < huge_numbers.size() - 1; ++i) {
+            answer = huge_numbers[i] - huge_numbers[i + 1];
+        }
+        t2 = high_resolution_clock::now();
+        std::cout << number_count - 1 << " Subtractions: " << "[" << number_size << "] "
+                  << duration_cast<microseconds>(t2 - t1).count() ;
+
+        // Multiplication timing
+        t1 = high_resolution_clock::now();
+        for (int i = 0; i < huge_numbers.size() - 1; ++i) {
+            answer = huge_numbers[i] * huge_numbers[i + 1];
+        }
+        t2 = high_resolution_clock::now();
+        std::cout << number_count - 1 << " Multiplications: " << "[" << number_size << "] "
+                  << duration_cast<microseconds>(t2 - t1).count() ;
+
+        // Division timing
+        t1 = high_resolution_clock::now();
+        for (const auto &huge_number: huge_numbers) {
+            answer = huge_number / 2;
+        }
+        t2 = high_resolution_clock::now();
+        std::cout << number_count - 1 << " Division: " << "[" << number_size << "] "
+                  << duration_cast<microseconds>(t2 - t1).count() << std::endl;
+    }
 }
 
