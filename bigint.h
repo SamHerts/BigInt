@@ -35,6 +35,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <functional>
+#include <algorithm>
+#include <random>
 
 namespace BigInt {
 
@@ -394,6 +396,8 @@ namespace BigInt {
             }
             return sum;
         }
+
+        static bigint random(size_t length);
 
     private:
         bool is_big = false;
@@ -843,6 +847,32 @@ namespace BigInt {
             }
         }
         return true;
+    }
+
+    bigint bigint::random(size_t length) {
+        const char charset[] = "0123456789";
+        std::default_random_engine rng(std::random_device{}());
+
+        // Distribution for the first digit (1-9)
+        std::uniform_int_distribution<> first_dist(1, 9);
+        // Distribution for the other digits (0-9)
+        std::uniform_int_distribution<> dist(0, 9);
+
+        // Lambda to generate the first character
+        auto randchar_first = [charset, &first_dist, &rng]() { return charset[first_dist(rng)]; };
+        // Lambda to generate subsequent characters
+        auto randchar = [charset, &dist, &rng]() { return charset[dist(rng)]; };
+
+        // Create a string with the specified length
+        std::string str(length, 0);
+
+        // Generate the first character separately to ensure it's not '0'
+        str[0] = randchar_first();
+
+        // Generate the remaining characters
+        std::generate_n(str.begin() + 1, length - 1, randchar);
+
+        return {str};
     }
 
 } // namespace::BigInt
