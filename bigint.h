@@ -71,12 +71,21 @@ namespace BigInt {
         bigint(double n) : bigint(static_cast<long long>(n)) {}
 
         bigint(long long n) {
-            vec.emplace_back(n);
+            if ( n >= 1000000000000000000)
+            {
+                vec.emplace_back(n / 1000000000000000000);
+                vec.emplace_back(n % 1000000000000000000);
+            }
+            else{
+                vec.emplace_back(n);
+            }
         }
 
         bigint(const bigint &n) { *this = n; }
 
         bigint(const char* string) : bigint(std::string(string)) {}
+
+        bigint(std::vector<long long> n) {this->vec = n;}
 
         bigint& operator=(const bigint& other)
         {
@@ -343,6 +352,14 @@ namespace BigInt {
 
         // Function Definitions for Internal Uses
 
+        static bigint trim(const bigint& input) {
+            auto temp = input;
+            while (temp.vec.front() == 0){
+                temp.vec.erase(temp.vec.begin());
+            }
+            return temp;
+        }
+
         static std::vector<long long> string_to_vector(std::string input);
 
         static std::string vector_to_string(const std::vector<long long>& input);
@@ -424,6 +441,36 @@ namespace BigInt {
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
     }
 
+    template <class T>
+    int numDigits(T number)
+    {
+        int digits = 0;
+        if (number < 0) digits = 1; // remove this line if '-' counts as a digit
+        while (number) {
+            number /= 10;
+            digits++;
+        }
+        return digits;
+    }
+
+    std::pair<int, long long> add_with_carry(long long lhs, long long rhs)
+    {
+        long long max_number = 1000000000000000000;
+        auto sum = lhs + rhs;
+
+        if (sum >= max_number)
+        {
+            // Carry needs to happen
+            auto carry = sum / max_number;
+            auto result = sum % max_number;
+            return {carry, result};
+        }
+        else
+        {
+            return {0, sum};
+        }
+    }
+
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
         if (is_negative(lhs) && is_negative(rhs))
@@ -439,17 +486,30 @@ namespace BigInt {
             return lhs - abs(rhs);
         }
 
-        auto smaller = lhs.vec.size() <= rhs.vec.size() ? lhs: rhs;
-        auto larger = lhs.vec.size() > rhs.vec.size() ? lhs: rhs;
+        bigint temp_lhs = lhs >= rhs ? lhs : rhs;
+        bigint temp_rhs = lhs >= rhs ? rhs : lhs;
+        std::vector<std::pair<int, long long>> temp(temp_lhs.vec.size() + 1);
 
-        for (int i = smaller.vec.size() - 1; i >= 0; --i) {
-            // TODO: Check for carry
-            larger.vec[i] += smaller.vec[i];
+        // Fill the smaller to match the larger size
+        while (temp_lhs.vec.size() > temp_rhs.vec.size())
+        {
+            temp_rhs.vec.insert(temp_rhs.vec.begin(), 0);
+        }
+//        auto my_lambda = [&](const auto& first, const auto& second)
+//        {
+//            if ( numDigits(first + second) > 18)
+//            return first + second;
+//        };
+
+        std::transform(temp_lhs.vec.rbegin(), temp_lhs.vec.rend(), temp_rhs.vec.rbegin(), temp.rbegin(), add_with_carry);
+
+        std::vector<long long> new_temp(temp_lhs.vec.size() + 1);
+        for (int i = temp.size() - 1; i >= 0; --i) {
+            new_temp[i] += temp[i].second;
+            new_temp[i - 1] += temp[i].first;
         }
 
-        bigint ans = larger;
-        return ans;
-        999999999999999999 + 999999999999999999;
+        return trim(bigint(new_temp));
     }
 
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
@@ -591,18 +651,6 @@ namespace BigInt {
 //        s = divide(s, "2");
 //    }
 //    return logVal;
-    }
-
-    template <class T>
-    int numDigits(T number)
-    {
-        int digits = 0;
-        if (number < 0) digits = 1; // remove this line if '-' counts as a digit
-        while (number) {
-            number /= 10;
-            digits++;
-        }
-        return digits;
     }
 
     inline bigint bigint::log10(const bigint &input)
