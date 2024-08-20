@@ -45,11 +45,13 @@ namespace BigInt {
 
         bigint() = default;
 
+        std::vector<long long int> string_to_vec(const std::string &basicString);
+
         bigint(const std::string &s)
         {
             if (!is_bigint(s))
                 throw std::runtime_error("Invalid Big Integer.");
-            str = s;
+            vec = string_to_vec(s);
             is_big = true;
         }
 
@@ -401,8 +403,7 @@ namespace BigInt {
 
     private:
         bool is_big = false;
-//        std::string str;
-        long long int base_repr{};
+        long long base_repr{};
         std::vector<long long> vec{};
 
         // Function Definitions for Internal Uses
@@ -874,6 +875,26 @@ namespace BigInt {
         std::generate_n(str.begin() + 1, length - 1, randchar);
 
         return {str};
+    }
+
+    std::vector<long long> bigint::string_to_vec(const std::string &basicString) {
+        // Break into chunks of 18 characters
+        std::vector<long long> result;
+        int chunk_size = 18;
+        int string_size = basicString.size();
+        while ( string_size % chunk_size != 0)
+        {
+            if (string_size / chunk_size == 0)
+            {
+                break;
+            }
+            basicString.insert(basicString.begin(), )
+            // Need to pad the length until mod 18 is met
+
+        }
+
+
+        return std::vector<long long>();
     }
 
 } // namespace::BigInt
