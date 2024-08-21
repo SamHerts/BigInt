@@ -37,6 +37,7 @@
 #include <functional>
 #include <algorithm>
 #include <random>
+#include <iomanip>
 
 namespace BigInt {
 
@@ -49,7 +50,15 @@ namespace BigInt {
         {
             if (!is_bigint(s))
                 throw std::runtime_error("Invalid Big Integer.");
-            vec = string_to_vector(s);
+            if(s[0] == '-')
+            {
+                is_neg = true;
+                vec = string_to_vector(s.substr(1));
+            }
+            else
+            {
+                vec = string_to_vector(s);
+            }
         }
 
         bigint(const char c)
@@ -71,13 +80,21 @@ namespace BigInt {
         bigint(double n) : bigint(static_cast<long long>(n)) {}
 
         bigint(long long n) {
-            if ( n >= 1000000000000000000)
+
+//            if ( n >= 1000000000000000000)
+            if ( n >= 1000000000000000000 || n <= -1000000000000000000)
             {
                 vec.emplace_back(n / 1000000000000000000);
                 vec.emplace_back(n % 1000000000000000000);
             }
             else{
                 vec.emplace_back(n);
+            }
+
+            if (n < 0)
+            {
+                is_neg = true;
+                for (auto& x : vec) { x = std::abs(x); }
             }
         }
 
@@ -473,6 +490,7 @@ namespace BigInt {
 
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
+        // Ensure LHS is larger than RHS, and both are positive
         if (is_negative(lhs) && is_negative(rhs))
         {
             return negate(add(abs(lhs) ,abs(rhs)));
@@ -486,14 +504,18 @@ namespace BigInt {
             return lhs - abs(rhs);
         }
 
-        bigint temp_lhs = lhs >= rhs ? lhs : rhs;
-        bigint temp_rhs = lhs >= rhs ? rhs : lhs;
-        std::vector<std::pair<int, long long>> temp(temp_lhs.vec.size() + 1);
+        if (lhs < rhs)
+        {
+            return add(rhs, lhs);
+        }
+
+        bigint full_rhs =  rhs;
+        std::vector<std::pair<int, long long>> carry_result(lhs.vec.size() + 1);
 
         // Fill the smaller to match the larger size
-        while (temp_lhs.vec.size() > temp_rhs.vec.size())
+        while (lhs.vec.size() > full_rhs.vec.size())
         {
-            temp_rhs.vec.insert(temp_rhs.vec.begin(), 0);
+            full_rhs.vec.insert(full_rhs.vec.begin(), 0);
         }
 //        auto my_lambda = [&](const auto& first, const auto& second)
 //        {
@@ -501,19 +523,38 @@ namespace BigInt {
 //            return first + second;
 //        };
 
-        std::transform(temp_lhs.vec.rbegin(), temp_lhs.vec.rend(), temp_rhs.vec.rbegin(), temp.rbegin(), add_with_carry);
+        std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
 
-        std::vector<long long> new_temp(temp_lhs.vec.size() + 1);
-        for (int i = temp.size() - 1; i >= 0; --i) {
-            new_temp[i] += temp[i].second;
-            new_temp[i - 1] += temp[i].first;
+        std::vector<long long> final(lhs.vec.size() + 1);
+        for (int i = carry_result.size() - 1; i >= 0; --i) {
+            final[i] += carry_result[i].second;
+            final[i - 1] += carry_result[i].first;
         }
 
-        return trim(bigint(new_temp));
+        return trim(bigint(final));
     }
+
+    std::pair<int, long long> subtract_with_borrow(long long lhs, long long rhs)
+    {
+        long long max_number = 1000000000000000000;
+
+        if (lhs < rhs)
+        {
+            // Borrow needs to happen
+            auto result = (lhs + max_number) - rhs;
+            return {1, result}; // 1 represents a borrow
+        }
+        else
+        {
+            auto result = lhs - rhs;
+            return {0, result}; // 0 means no borrow
+        }
+    }
+
 
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
     {
+        // Ensure LHS is larger than RHS, and both are positive
         if (lhs == rhs)
         {
             return 0;
@@ -539,9 +580,25 @@ namespace BigInt {
             return negate(subtract(rhs, lhs));
         }
 
-        // Actual string subtraction implementation
-        bigint ans;
-        return ans;
+        bigint full_rhs =  rhs;
+        std::vector<std::pair<int, long long>> borrow_result(lhs.vec.size());
+        // Fill the smaller to match the larger size
+        while (lhs.vec.size() > full_rhs.vec.size())
+        {
+            full_rhs.vec.insert(full_rhs.vec.begin(), 0);
+        }
+
+        std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), borrow_result.rbegin(),
+                       subtract_with_borrow);
+
+        std::vector<long long> final(lhs.vec.size());
+        for (int i = borrow_result.size() - 1; i >= 0; --i) {
+            final[i] += borrow_result[i].second;
+            if (borrow_result[i].first)
+                final[i - 1] -= borrow_result[i].first;
+        }
+
+        return trim(final);
     }
 
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
@@ -797,8 +854,14 @@ namespace BigInt {
 
     std::string bigint::vector_to_string(const std::vector<long long>& input) {
         std::stringstream ss;
+        bool first = true;
         for (auto partial : input) {
-            ss << partial;
+            if (first) {
+                ss << partial;  // No padding for the first number
+                first = false;
+            } else {
+                ss << std::setw(18) << std::setfill('0') << partial;  // Pad to 18 digits
+            }
         }
         return ss.str();
     }
