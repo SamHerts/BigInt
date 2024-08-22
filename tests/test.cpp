@@ -42,6 +42,7 @@ TEST(BigInt_test, Addition_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
+    bigint negative_number = "-9876543210123456789314159";
     bigint max_ll = LLONG_MAX;
     ASSERT_EQ(bigint("10") + bigint("20"), "30");
     ASSERT_EQ(small_number + 5, 9960);
@@ -51,6 +52,10 @@ TEST(BigInt_test, Addition_Tests)
 
     ASSERT_EQ( max_ll + 1, "9223372036854775808");
     ASSERT_EQ(huge_number_2 + 1, "10000000000000000000");
+
+    ASSERT_EQ(negative_number + small_number, "-9876543210123456789304204");
+    ASSERT_EQ(small_number + negative_number, "-9876543210123456789304204");
+    ASSERT_EQ(negative_number + negative_number, "-19753086420246913578628318");
 }
 
 TEST(BigInt_test, Subtraction_Tests)
@@ -58,6 +63,7 @@ TEST(BigInt_test, Subtraction_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "10000000000000000000";
+    bigint negative_number = "-9876543210123456789314159";
     bigint min_ll = LLONG_MIN;
     ASSERT_EQ(bigint("30") - bigint("20"), "10");
     ASSERT_EQ(small_number - 5, 9950);
@@ -65,6 +71,10 @@ TEST(BigInt_test, Subtraction_Tests)
     ASSERT_EQ(min_ll - 1, bigint("-9223372036854775809"));
     ASSERT_EQ(huge_number_1 - 1, "123456788");
     ASSERT_EQ(huge_number_2 - 1, "9999999999999999999");
+
+    ASSERT_EQ(negative_number - small_number, "-9876543210123456789324114");
+    ASSERT_EQ(small_number - negative_number, "9876543210123456789324114");
+    ASSERT_EQ(negative_number - negative_number, "0");
 }
 
 TEST(BigInt_test, Multiplication_Tests)
@@ -76,7 +86,7 @@ TEST(BigInt_test, Multiplication_Tests)
     ASSERT_EQ(bigint("30") * bigint("20"), "600");
     ASSERT_EQ(small_number * 5, 49775);
     ASSERT_EQ(small_number * small_number, 99102025);
-    ASSERT_EQ(small_number * max_ll, "91818668626889293158685");
+    ASSERT_EQ(small_number * max_ll, bigint("91818668626889293158685"));
     ASSERT_EQ(huge_number_1 * 2, "246913578");
     ASSERT_EQ(huge_number_2 * huge_number_2, "99999999999999999980000000000000000001");
 }
