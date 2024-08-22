@@ -517,11 +517,6 @@ namespace BigInt {
         {
             full_rhs.vec.insert(full_rhs.vec.begin(), 0);
         }
-//        auto my_lambda = [&](const auto& first, const auto& second)
-//        {
-//            if ( numDigits(first + second) > 18)
-//            return first + second;
-//        };
 
         std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
 
@@ -601,17 +596,77 @@ namespace BigInt {
         return trim(final);
     }
 
+    std::pair<int, long long> multiply_with_carry(long long lhs, long long rhs)
+    {
+        long long max_number = 1000000000000000000; // 10^18
+        long long max_half = 1000000000; // 10^9
+
+        // Split the numbers into higher and lower parts
+        long long lhs_high = lhs / max_half;
+        long long lhs_low = lhs % max_half;
+        long long rhs_high = rhs / max_half;
+        long long rhs_low = rhs % max_half;
+
+        // Multiply parts to avoid overflow
+        long long high_high = lhs_high * rhs_high;
+        long long high_low = lhs_high * rhs_low;
+        long long low_high = lhs_low * rhs_high;
+        long long low_low = lhs_low * rhs_low;
+
+        // Combine the results
+        long long cross_terms = high_low + low_high;
+        long long result = low_low + (cross_terms % max_half) * max_half;
+
+        // Calculate the carry
+        long long carry = high_high + (cross_terms / max_half) + (result / max_number);
+        result = result % max_number;
+
+        return {carry, result};
+    }
+
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
     {
+        long long max_number = 1000000000000000000;
         if (is_negative(lhs) && is_negative(rhs)) {
             return (abs(lhs) * abs(lhs));
         }
         if (is_negative(lhs) || is_negative(rhs)) {
             return negate(abs(lhs) * abs(rhs));
         }
+        if (lhs < rhs)
+        {
+            return multiply(rhs, lhs);
+        }
 
-        bigint ans;
-        return ans;
+        size_t lhs_size = lhs.vec.size();
+        size_t rhs_size = rhs.vec.size();
+
+        std::vector<long long> final(lhs_size + rhs_size, 0);
+
+        for (int i = lhs_size - 1; i >= 0; --i) {
+            for (int j = rhs_size - 1; j >= 0; --j) {
+                auto result = multiply_with_carry(lhs.vec[i], rhs.vec[j]);
+
+                // Accumulate the result in the appropriate position
+                final[i + j + 1] += result.second;
+                final[i + j] += result.first;
+
+                // Manage overflow from the addition
+                if (final[i + j + 1] >= max_number) {
+                    final[i + j] += final[i + j + 1] / max_number;
+                    final[i + j + 1] %= max_number;
+                }
+
+                if (final[i + j] >= max_number) {
+                    if (i + j > 0) {
+                        final[i + j - 1] += final[i + j] / max_number;
+                        final[i + j] %= max_number;
+                    }
+                }
+            }
+        }
+
+        return trim(final);
     }
 
 
