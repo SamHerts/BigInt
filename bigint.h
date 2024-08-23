@@ -690,8 +690,10 @@ namespace BigInt {
             quotient += numerator_size;
             count = count_digits(remainder) - count_digits(denominator) - 1;
 
+
             if (numerator_size <= 1)
             {
+                quotient += remainder / denominator;
                 break;
             }
             if (remainder.vec.size() <= 1)
