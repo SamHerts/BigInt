@@ -408,6 +408,8 @@ namespace BigInt {
 
         static bool is_bigint(const std::string &);
 
+        static int count_digits(const bigint&);
+
         inline static int char_to_int(const char input)
         {
             return input - '0';
@@ -456,18 +458,6 @@ namespace BigInt {
             return s.find_first_not_of("0123456789", 1) == std::string::npos;
         }
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
-    }
-
-    template <class T>
-    int numDigits(T number)
-    {
-        int digits = 0;
-        if (number < 0) digits = 1; // remove this line if '-' counts as a digit
-        while (number) {
-            number /= 10;
-            digits++;
-        }
-        return digits;
     }
 
     std::pair<int, long long> add_with_carry(long long lhs, long long rhs)
@@ -889,6 +879,11 @@ namespace BigInt {
             }
         }
         return ss.str();
+    }
+
+    int bigint::count_digits(const bigint & input) {
+        std::string my_string = vector_to_string(input.vec);
+        return my_string.length() - 1;
     }
 
 } // namespace::BigInt
