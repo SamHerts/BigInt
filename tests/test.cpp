@@ -82,13 +82,19 @@ TEST(BigInt_test, Multiplication_Tests)
     bigint small_number = 9955;
     bigint huge_number_1 = "123456789";
     bigint huge_number_2 = "9999999999999999999";
+    bigint negative_number = "-678345123987345645559001";
     bigint max_ll = LLONG_MAX;
     ASSERT_EQ(bigint("30") * bigint("20"), "600");
+    ASSERT_EQ(small_number * 0, 0);
+    ASSERT_EQ(small_number * 1, 9955);
     ASSERT_EQ(small_number * 5, 49775);
     ASSERT_EQ(small_number * small_number, 99102025);
     ASSERT_EQ(small_number * max_ll, bigint("91818668626889293158685"));
     ASSERT_EQ(huge_number_1 * 2, "246913578");
     ASSERT_EQ(huge_number_2 * huge_number_2, "99999999999999999980000000000000000001");
+    ASSERT_EQ(negative_number * small_number, "-6752925709294025901539854955");
+    ASSERT_EQ(small_number * negative_number, "-6752925709294025901539854955");
+    ASSERT_EQ(negative_number * negative_number, "460152107237407336735321298008566431113772118001");
 }
 
 
@@ -172,7 +178,7 @@ TEST(BigInt_test, Modulus_Tests)
     ASSERT_EQ(huge_number_1 % small_number, 4834);
 }
 
-TEST(BigInt_test_Addition_Tests_Test, Speed_Tests)
+TEST(BigInt_test, Speed_Tests)
 {
     using std::chrono::high_resolution_clock;
     using std::chrono::microseconds;
