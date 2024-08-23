@@ -162,7 +162,7 @@ TEST(BigInt_test, Modulus_Tests)
     ASSERT_EQ(huge_number_1 % small_number, 4834);
 }
 
-TEST(BigInt_test_Addition_Tests_Test, Speed_Tests)
+TEST(BigInt_test, Speed_Tests)
 {
     using std::chrono::high_resolution_clock;
     using std::chrono::microseconds;
