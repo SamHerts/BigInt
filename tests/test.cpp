@@ -211,6 +211,20 @@ TEST(BigInt_test, Speed_Tests)
 
         bigint answer = 0;
 
+        auto formatTime = [](int64_t microseconds) -> std::string {
+            std::ostringstream result;
+
+            if (microseconds >= 1000000) {
+                result << (microseconds / 1000000.0) << " seconds";
+            } else if (microseconds >= 1000) {
+                result << (microseconds / 1000.0) << " milliseconds";
+            } else {
+                result << microseconds << " microseconds";
+            }
+
+            return result.str();
+        };
+
         // Addition timing
         auto t1 = high_resolution_clock::now();
         for (int i = 0; i < huge_numbers.size() - 1; ++i) {
@@ -220,7 +234,7 @@ TEST(BigInt_test, Speed_Tests)
         auto t2 = high_resolution_clock::now();
 
         std::cout << number_count - 1 << " Additions: " << "[" << number_size << "] "
-                  << duration_cast<microseconds>(t2 - t1).count() ;
+                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
 
         // Subtraction timing
         t1 = high_resolution_clock::now();
@@ -228,8 +242,8 @@ TEST(BigInt_test, Speed_Tests)
             answer = huge_numbers[i] - huge_numbers[i + 1];
         }
         t2 = high_resolution_clock::now();
-        std::cout << number_count - 1 << " Subtractions: " << "[" << number_size << "] "
-                  << duration_cast<microseconds>(t2 - t1).count() ;
+        std::cout  << " Subtractions: " << "[" << number_size << "] "
+                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
 
         // Multiplication timing
         t1 = high_resolution_clock::now();
@@ -237,8 +251,8 @@ TEST(BigInt_test, Speed_Tests)
             answer = huge_numbers[i] * huge_numbers[i + 1];
         }
         t2 = high_resolution_clock::now();
-        std::cout << number_count - 1 << " Multiplications: " << "[" << number_size << "] "
-                  << duration_cast<microseconds>(t2 - t1).count() ;
+        std::cout  << " Multiplications: " << "[" << number_size << "] "
+                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
 
         // Division timing
         t1 = high_resolution_clock::now();
@@ -246,8 +260,8 @@ TEST(BigInt_test, Speed_Tests)
             answer = huge_number / 2;
         }
         t2 = high_resolution_clock::now();
-        std::cout << number_count - 1 << " Division: " << "[" << number_size << "] "
-                  << duration_cast<microseconds>(t2 - t1).count() << std::endl;
+        std::cout  << " Division: " << "[" << number_size << "] "
+                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) << std::endl;
     }
 }
 
