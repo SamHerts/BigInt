@@ -491,6 +491,8 @@ namespace BigInt {
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
         // Ensure LHS is larger than RHS, and both are positive
+        if (lhs == 0) return rhs;
+        if (rhs == 0) return lhs;
         if (is_negative(lhs) && is_negative(rhs))
         {
             return negate(add(abs(lhs) ,abs(rhs)));
@@ -503,7 +505,6 @@ namespace BigInt {
         {
             return lhs - abs(rhs);
         }
-
         if (lhs < rhs)
         {
             return add(rhs, lhs);
@@ -546,30 +547,24 @@ namespace BigInt {
         }
     }
 
-
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
     {
         // Ensure LHS is larger than RHS, and both are positive
-        if (lhs == rhs)
-        {
-            return 0;
-        }
+        if (rhs == 0) return lhs;
+        if (lhs == rhs) return 0;
 
         if (is_negative(lhs) && is_negative(rhs))
         {
             return subtract(abs(rhs), abs(lhs));
         }
-
         if (is_negative(rhs))
         {
             return add(lhs, abs(rhs));
         }
-
         if (is_negative(lhs))
         {
             return add(lhs, negate(rhs));
         }
-
         if (lhs < rhs)
         {
             return negate(subtract(rhs, lhs));
@@ -596,41 +591,18 @@ namespace BigInt {
         return trim(final);
     }
 
-    std::pair<int, long long> multiply_with_carry(long long lhs, long long rhs)
-    {
-        long long max_number = 1000000000000000000; // 10^18
-        long long max_half = 1000000000; // 10^9
-
-        // Split the numbers into higher and lower parts
-        long long lhs_high = lhs / max_half;
-        long long lhs_low = lhs % max_half;
-        long long rhs_high = rhs / max_half;
-        long long rhs_low = rhs % max_half;
-
-        // Multiply parts to avoid overflow
-        long long high_high = lhs_high * rhs_high;
-        long long high_low = lhs_high * rhs_low;
-        long long low_high = lhs_low * rhs_high;
-        long long low_low = lhs_low * rhs_low;
-
-        // Combine the results
-        long long cross_terms = high_low + low_high;
-        long long result = low_low + (cross_terms % max_half) * max_half;
-
-        // Calculate the carry
-        long long carry = high_high + (cross_terms / max_half) + (result / max_number);
-        result = result % max_number;
-
-        return {carry, result};
-    }
-
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
     {
-        long long max_number = 1000000000000000000;
-        if (is_negative(lhs) && is_negative(rhs)) {
+        if (lhs == 0 || rhs == 0) return 0;
+        if (lhs == 1) return rhs;
+        if (rhs == 1) return lhs;
+
+        if (is_negative(lhs) && is_negative(rhs))
+        {
             return (abs(lhs) * abs(lhs));
         }
-        if (is_negative(lhs) || is_negative(rhs)) {
+        if (is_negative(lhs) || is_negative(rhs))
+        {
             return negate(abs(lhs) * abs(rhs));
         }
         if (lhs < rhs)
@@ -641,68 +613,66 @@ namespace BigInt {
         size_t lhs_size = lhs.vec.size();
         size_t rhs_size = rhs.vec.size();
 
-        std::vector<long long> final(lhs_size + rhs_size, 0);
+        std::vector<long long> result(lhs_size + rhs_size, 0);
+        const long long base = 1000000000000000000LL; // 10^18
 
+        // Traverse backwards to match the most significant to least significant order
         for (int i = lhs_size - 1; i >= 0; --i) {
             for (int j = rhs_size - 1; j >= 0; --j) {
-                auto result = multiply_with_carry(lhs.vec[i], rhs.vec[j]);
+                // Calculate the product and the corresponding indices in the result vector
+                __int128 mul = (__int128)lhs.vec[i] * (__int128)rhs.vec[j];
+                int pos_low = (result.size() - 1) - ((lhs_size - 1 - i) + (rhs_size - 1 - j));
+                int pos_high = pos_low - 1;
 
-                // Accumulate the result in the appropriate position
-                final[i + j + 1] += result.second;
-                final[i + j] += result.first;
-
-                // Manage overflow from the addition
-                if (final[i + j + 1] >= max_number) {
-                    final[i + j] += final[i + j + 1] / max_number;
-                    final[i + j + 1] %= max_number;
+                // Add the product to the result vector
+                result[pos_low] += mul % base;
+                if (pos_high >= 0) {
+                    result[pos_high] += mul / base;
                 }
 
-                if (final[i + j] >= max_number) {
-                    if (i + j > 0) {
-                        final[i + j - 1] += final[i + j] / max_number;
-                        final[i + j] %= max_number;
+                // Handle carry
+                if (result[pos_low] >= base) {
+                    if (pos_high >= 0) {
+                        result[pos_high] += result[pos_low] / base;
                     }
+                    result[pos_low] %= base;
                 }
             }
         }
 
-        return trim(final);
+        // Handle carries for remaining positions
+        for (int i = result.size() - 1; i > 0; --i) {
+            if (result[i] >= base) {
+                result[i - 1] += result[i] / base;
+                result[i] %= base;
+            }
+        }
+        return trim(result);
     }
 
 
     inline bigint bigint::divide(const bigint &numerator, const bigint &denominator)
-    {                   // return arithmetic division of str1/str2
-
-        if (denominator == 0) {
+    {
+        if (denominator == 0)
+        {
             throw std::domain_error("Attempted to divide by zero.");
         }
-        if (numerator == denominator)
-        {
-            return 1;
-        }
-
-        if (denominator == 1) {
-            return numerator;
-        }
-
-        if (numerator == 0) {
-            return 0;
-        }
+        if (numerator == denominator) return 1;
+        if (denominator == 1) return numerator;
+        if (numerator == 0) return 0;
 
         if (is_negative(numerator) && is_negative(denominator))
         {
             return divide(abs(numerator), abs(denominator));
         }
-        else if (is_negative(numerator) || is_negative(denominator))
+        if (is_negative(numerator) || is_negative(denominator))
         {
             return negate(divide(abs(numerator), abs(denominator)));
         }
-
         if (denominator > numerator)
         {
             return 0;
         }
-
 
         bigint ans;
         return ans;
