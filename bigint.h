@@ -665,13 +665,44 @@ namespace BigInt {
         {
             return negate(divide(abs(numerator), abs(denominator)));
         }
-        if (denominator > numerator)
+        if (numerator < denominator)
         {
             return 0;
         }
+        if (numerator.vec.size() <= 1)
+        {
+            return numerator.vec.back() / denominator.vec.back();
+        }
 
-        bigint ans;
-        return ans;
+        bigint remainder = numerator;
+        bigint quotient = 0;
+
+        auto count = count_digits(remainder) - count_digits(denominator) - 1;
+
+        auto numerator_size = pow(10, count);
+
+        auto temp = denominator * numerator_size;
+
+        while (denominator * numerator_size < remainder)
+        {
+            temp = denominator * numerator_size;
+            remainder -= temp;
+            quotient += numerator_size;
+            count = count_digits(remainder) - count_digits(denominator) - 1;
+
+            if (numerator_size <= 1)
+            {
+                break;
+            }
+            if (remainder.vec.size() <= 1)
+            {
+                quotient += remainder.vec.back() / denominator.vec.back();
+                break;
+            }
+            numerator_size = pow(10, count);
+        }
+
+        return quotient;
     }
 
     inline bigint bigint::sqrt(const bigint &input)
@@ -744,7 +775,7 @@ namespace BigInt {
         }
         int count = 0;
         for (auto number : input.vec) {
-            count += numDigits(number);
+            count += count_digits(number);
         }
 
         return count - 1;
