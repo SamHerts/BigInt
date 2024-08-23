@@ -600,43 +600,49 @@ namespace BigInt {
             return multiply(rhs, lhs);
         }
 
-        size_t lhs_size = lhs.vec.size();
-        size_t rhs_size = rhs.vec.size();
-
-        std::vector<long long> result(lhs_size + rhs_size, 0);
         const long long base = 1000000000000000000LL; // 10^18
 
-        // Traverse backwards to match the most significant to least significant order
-        for (int i = lhs_size - 1; i >= 0; --i) {
-            for (int j = rhs_size - 1; j >= 0; --j) {
+        std::vector<long long> result(lhs.vec.size() + rhs.vec.size(), 0);
+
+        auto lhs_it = lhs.vec.rbegin();
+        auto rhs_it = rhs.vec.rbegin();
+
+        for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs)
+        {
+            for (auto it_rhs = rhs.vec.rbegin(); it_rhs != rhs.vec.rend(); ++it_rhs)
+            {
                 // Calculate the product and the corresponding indices in the result vector
-                __int128 mul = (__int128)lhs.vec[i] * (__int128)rhs.vec[j];
-                int pos_low = (result.size() - 1) - ((lhs_size - 1 - i) + (rhs_size - 1 - j));
-                int pos_high = pos_low - 1;
+                // use 128 bits to carefully store overflow
+                __int128 mul = static_cast<__int128>(*it_lhs) * static_cast<__int128>(*it_rhs);
+                auto pos_low_it = result.rbegin() + (std::distance(lhs.vec.rbegin(), it_lhs) + std::distance(rhs.vec.rbegin(), it_rhs));
+                auto pos_high_it = pos_low_it + 1;
 
                 // Add the product to the result vector
-                result[pos_low] += mul % base;
-                if (pos_high >= 0) {
-                    result[pos_high] += mul / base;
+                *pos_low_it += mul % base;
+                if (pos_high_it != result.rend())
+                {
+                    *pos_high_it += mul / base;
                 }
 
                 // Handle carry
-                if (result[pos_low] >= base) {
-                    if (pos_high >= 0) {
-                        result[pos_high] += result[pos_low] / base;
+                if (*pos_low_it >= base) {
+                    if (pos_high_it != result.rend()) {
+                        *pos_high_it += *pos_low_it / base;
                     }
-                    result[pos_low] %= base;
+                    *pos_low_it %= base;
                 }
             }
         }
 
         // Handle carries for remaining positions
-        for (int i = result.size() - 1; i > 0; --i) {
-            if (result[i] >= base) {
-                result[i - 1] += result[i] / base;
-                result[i] %= base;
+        for (auto r_iter = result.rbegin(); r_iter != result.rend() - 1; ++r_iter) {
+            if (*r_iter >= base)
+            {
+                *(r_iter + 1) += *r_iter / base;
+                *r_iter %= base;
             }
         }
+
         return trim(result);
     }
 
