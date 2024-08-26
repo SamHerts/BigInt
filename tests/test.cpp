@@ -243,7 +243,7 @@ TEST(BigInt_test, Speed_Tests)
         }
         t2 = high_resolution_clock::now();
         std::cout  << " Subtractions: " << "[" << number_size << "] "
-                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
+                   << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
 
         // Multiplication timing
         t1 = high_resolution_clock::now();
@@ -261,7 +261,7 @@ TEST(BigInt_test, Speed_Tests)
         }
         t2 = high_resolution_clock::now();
         std::cout  << " Division: " << "[" << number_size << "] "
-                  << formatTime(duration_cast<microseconds>(t2 - t1).count()) << std::endl;
+                   << formatTime(duration_cast<microseconds>(t2 - t1).count()) << std::endl;
     }
 }
 
