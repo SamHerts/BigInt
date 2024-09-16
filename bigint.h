@@ -494,7 +494,7 @@ namespace BigInt {
         std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
 
         std::vector<long long> final(lhs.vec.size() + 1);
-        for (auto i = carry_result.size() - 1; i >= 0; --i) {
+        for (int i = carry_result.size() - 1; i >= 0; --i) {
             final[i] += carry_result[i].second;
             final[i - 1] += carry_result[i].first;
         }
@@ -552,7 +552,7 @@ namespace BigInt {
                        subtract_with_borrow);
 
         std::vector<long long> final(lhs.vec.size());
-        for (auto i = borrow_result.size() - 1; i >= 0; --i) {
+        for (int i = borrow_result.size() - 1; i >= 0; --i) {
             final[i] += borrow_result[i].second;
             if (borrow_result[i].first)
                 final[i - 1] -= borrow_result[i].first;
