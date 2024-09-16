@@ -29,6 +29,7 @@
 
 #include <string>
 #include <sstream>
+#include <utility>
 #include <vector>
 #include <cmath>
 #include <limits>
@@ -111,9 +112,9 @@ namespace BigInt {
 
         bigint(const bigint &n) { *this = n; }
 
-        bigint(const char* string) : bigint(std::string(string)) {}
+        bigint(const char* n) : bigint(std::string(n)) {}
 
-        bigint(std::vector<long long> n) {this->vec = n;}
+        bigint(std::vector<long long> n) {this->vec = std::move(n);}
 
         bigint& operator=(const bigint& other)
         {
@@ -493,7 +494,7 @@ namespace BigInt {
         std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
 
         std::vector<long long> final(lhs.vec.size() + 1);
-        for (int i = carry_result.size() - 1; i >= 0; --i) {
+        for (auto i = carry_result.size() - 1; i >= 0; --i) {
             final[i] += carry_result[i].second;
             final[i - 1] += carry_result[i].first;
         }
@@ -551,7 +552,7 @@ namespace BigInt {
                        subtract_with_borrow);
 
         std::vector<long long> final(lhs.vec.size());
-        for (int i = borrow_result.size() - 1; i >= 0; --i) {
+        for (auto i = borrow_result.size() - 1; i >= 0; --i) {
             final[i] += borrow_result[i].second;
             if (borrow_result[i].first)
                 final[i - 1] -= borrow_result[i].first;
@@ -759,7 +760,10 @@ namespace BigInt {
 
     inline bigint bigint::logwithbase(const bigint &input, const bigint &base)
     {
-        return divide(log2(input), log2(base));
+        auto top = log2(input);
+        auto bottom = log2(base);
+        auto answer = divide(top, bottom);
+        return answer;
     }
 
     inline bigint bigint::antilog2(const bigint &input)
@@ -896,7 +900,7 @@ namespace BigInt {
 
     int bigint::count_digits(const bigint & input) {
         std::string my_string = vector_to_string(input.vec);
-        return my_string.length() - 1;
+        return static_cast<int>(my_string.length()) - 1;
     }
 
 } // namespace::BigInt
