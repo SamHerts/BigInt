@@ -43,6 +43,7 @@ namespace BigInt {
 
     class bigint {
     public:
+        static const auto MAX_SIZE = 1000000000000000000LL;
 
         bigint() = default;
 
@@ -80,12 +81,10 @@ namespace BigInt {
         bigint(double n) : bigint(static_cast<long long>(n)) {}
 
         bigint(long long n) {
-
-//            if ( n >= 1000000000000000000)
-            if ( n >= 1000000000000000000 || n <= -1000000000000000000)
+            if ( n >= MAX_SIZE || n <= -MAX_SIZE)
             {
-                vec.emplace_back(n / 1000000000000000000);
-                vec.emplace_back(n % 1000000000000000000);
+                vec.emplace_back(n / MAX_SIZE);
+                vec.emplace_back(n % MAX_SIZE);
             }
             else{
                 vec.emplace_back(n);
@@ -445,14 +444,13 @@ namespace BigInt {
 
     std::pair<int, long long> add_with_carry(long long lhs, long long rhs)
     {
-        long long max_number = 1000000000000000000;
         auto sum = lhs + rhs;
 
-        if (sum >= max_number)
+        if (sum >= bigint::MAX_SIZE)
         {
             // Carry needs to happen
-            auto carry = sum / max_number;
-            auto result = sum % max_number;
+            auto carry = sum / bigint::MAX_SIZE;
+            auto result = sum % bigint::MAX_SIZE;
             return {carry, result};
         }
         else
@@ -505,12 +503,10 @@ namespace BigInt {
 
     std::pair<int, long long> subtract_with_borrow(long long lhs, long long rhs)
     {
-        long long max_number = 1000000000000000000;
-
         if (lhs < rhs)
         {
             // Borrow needs to happen
-            auto result = (lhs + max_number) - rhs;
+            auto result = (lhs + bigint::MAX_SIZE) - rhs;
             return {1, result}; // 1 represents a borrow
         }
         else
@@ -583,12 +579,7 @@ namespace BigInt {
             return multiply(rhs, lhs);
         }
 
-        const long long base = 1000000000000000000LL; // 10^18
-
         std::vector<long long> result(lhs.vec.size() + rhs.vec.size(), 0);
-
-        auto lhs_it = lhs.vec.rbegin();
-        auto rhs_it = rhs.vec.rbegin();
 
         for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs)
         {
@@ -601,28 +592,28 @@ namespace BigInt {
                 auto pos_high_it = pos_low_it + 1;
 
                 // Add the product to the result vector
-                *pos_low_it += mul % base;
+                *pos_low_it += mul % MAX_SIZE;
                 if (pos_high_it != result.rend())
                 {
-                    *pos_high_it += mul / base;
+                    *pos_high_it += mul / MAX_SIZE;
                 }
 
                 // Handle carry
-                if (*pos_low_it >= base) {
+                if (*pos_low_it >= MAX_SIZE) {
                     if (pos_high_it != result.rend()) {
-                        *pos_high_it += *pos_low_it / base;
+                        *pos_high_it += *pos_low_it / MAX_SIZE;
                     }
-                    *pos_low_it %= base;
+                    *pos_low_it %= MAX_SIZE;
                 }
             }
         }
 
         // Handle carries for remaining positions
         for (auto r_iter = result.rbegin(); r_iter != result.rend() - 1; ++r_iter) {
-            if (*r_iter >= base)
+            if (*r_iter >= MAX_SIZE)
             {
-                *(r_iter + 1) += *r_iter / base;
-                *r_iter %= base;
+                *(r_iter + 1) += *r_iter / MAX_SIZE;
+                *r_iter %= MAX_SIZE;
             }
         }
 
