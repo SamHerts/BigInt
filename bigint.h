@@ -145,16 +145,6 @@ namespace BigInt {
         bigint operator+=(const bigint &rhs)
         {
             *this = add(*this, rhs);
-
-//            else if (rhs.base_repr > 0 && this->base_repr > std::numeric_limits<long long>::max() - rhs.base_repr ||
-//                rhs < 0 && this->base_repr < std::numeric_limits<long long>::min() - rhs.base_repr)
-//            {
-//                *this = add(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-//            }
-//            else
-//            {
-//                this->base_repr += rhs.base_repr;
-//            }
             return *this;
         }
 
@@ -169,16 +159,6 @@ namespace BigInt {
         {
 
             *this = subtract(*this, rhs);
-
-//            else if ((rhs.base_repr < 0 && this->base_repr > std::numeric_limits<long long>::max() + rhs.base_repr) ||
-//                    (rhs > 0 && this->base_repr < std::numeric_limits<long long>::min() + rhs.base_repr))
-//            {
-//                *this = subtract(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-//            }
-//            else
-//            {
-//                this->base_repr -= rhs.base_repr;
-//            }
             return *this;
         }
 
@@ -192,20 +172,6 @@ namespace BigInt {
         bigint operator*=(const bigint &rhs)
         {
             *this = multiply(*this, rhs);
-
-//            else if ((this->base_repr == -1 && rhs.base_repr == std::numeric_limits<long long>::min()) ||
-//                     (rhs.base_repr == -1 && this->base_repr == std::numeric_limits<long long>::min()) ||
-//                     (rhs.base_repr != 0 &&
-//                      this->base_repr > std::numeric_limits<long long>::max() / rhs.base_repr) ||
-//                     (rhs.base_repr != 0 &&
-//                      this->base_repr < std::numeric_limits<long long>::min() / rhs.base_repr))
-//            {
-//                *this = multiply(std::to_string(this->base_repr), std::to_string(rhs.base_repr));
-//            }
-//            else
-//            {
-//                this->base_repr *= rhs.base_repr;
-//            }
             return *this;
         }
 
