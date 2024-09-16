@@ -131,6 +131,11 @@ namespace BigInt {
             return static_cast<int>(vec.back());
         }
 
+        explicit operator long long() const
+        {
+          return vec.back();
+        }
+
         friend std::ostream &operator<<(std::ostream &stream, const bigint &n)
         {
             stream <<  vector_to_string(n.vec);
