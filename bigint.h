@@ -98,6 +98,18 @@ namespace BigInt {
             }
         }
 
+        bigint(unsigned long long n) {
+
+          if ( n >= MAX_SIZE )
+          {
+            vec.emplace_back(n / MAX_SIZE);
+            vec.emplace_back(n % MAX_SIZE);
+          }
+          else{
+            vec.emplace_back(n);
+          }
+        }
+
         bigint(const bigint &n) { *this = n; }
 
         bigint(const char* string) : bigint(std::string(string)) {}
