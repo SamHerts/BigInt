@@ -136,6 +136,10 @@ namespace BigInt {
           return vec.back();
         }
 
+        explicit operator std::string() {
+              return vector_to_string((*this).vec);
+        }
+
         friend std::ostream &operator<<(std::ostream &stream, const bigint &n)
         {
             stream <<  vector_to_string(n.vec);
