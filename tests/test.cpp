@@ -7,10 +7,13 @@
 #include <climits>
 #include <chrono>
 #include <string_view>
+#include <sstream>
 
 #include "../bigint.h"
 
 using namespace BigInt;
+
+bool SKIP_PERFORMANCE_TESTS = true;
 
 constexpr std::string_view kNines = "9999999999999999999";
 constexpr std::string_view kHugeA = "37744193401458640707539380267899264828998907634573602318662036836618621958669475225851195876029606479769348216875016014259295382637670116067802415326896673540817149305648020275612344553440582481192266196913778504499507839960073829863258118424953008896871971652295554512459916848335206655076766027606195514199793888542571641680917367253163346581387963223123048507895574406540841752099433832902520291592993232666589290350588973179516741959648948892906581313716663682087787058913539002195482835009516853";
@@ -33,14 +36,30 @@ struct TestCase
     TestCase(const std::string_view lhs, const std::string_view rhs, const std::string_view expected) : lhs(lhs), rhs(rhs), expected(expected) {}
 };
 
-class BigInt_test : public ::testing::Test{};
+class Test_BigInt : public ::testing::Test{};
+class Test_BigInt_Performance : public ::testing::Test
+{
+protected:
+    void SetUp() override {
+        if (SKIP_PERFORMANCE_TESTS)
+            GTEST_SKIP() << "Skipping performance tests for this fixture";
+    }
+};
+
+class Test_BigInt_F : public ::testing::Test
+{
+protected:
+    bigint A {std::string(kHugeA)};
+    bigint B {std::string(kHugeB)};
+    bigint C {std::string(kNines)};
+};
 class BigInt_AddParamTest : public ::testing::TestWithParam<TestCase>{};
 class BigInt_SubParamTest : public ::testing::TestWithParam<TestCase>{};
 class BigInt_MulParamTest : public ::testing::TestWithParam<TestCase>{};
 class BigInt_DivParamTest : public ::testing::TestWithParam<TestCase>{};
 class BigInt_ModParamTest : public ::testing::TestWithParam<TestCase>{};
 
-TEST(BigInt_test, Invalid_Tests)
+TEST(Test_BigInt, Invalid_Tests)
 {
     EXPECT_THROW(bigint('a'),std::runtime_error);
     EXPECT_THROW(bigint(static_cast<char>(0)),std::runtime_error);
@@ -51,14 +70,19 @@ TEST(BigInt_test, Invalid_Tests)
     EXPECT_THROW(bigint("123456a7"),std::runtime_error);
     EXPECT_THROW(bigint("-123456a7"),std::runtime_error);
     EXPECT_THROW(bigint("01234567"),std::runtime_error);
+    EXPECT_THROW(bigint("007"),std::runtime_error);
     ASSERT_THROW(bigint("1234567.9"),std::runtime_error);
+    ASSERT_THROW(bigint("+1234567"),std::runtime_error);
+    ASSERT_THROW(bigint(" 1234567"),std::runtime_error);
+    ASSERT_THROW(bigint("1234567 "),std::runtime_error);
     EXPECT_THROW(bigint("-0"),std::runtime_error);
+    EXPECT_THROW(bigint("-"),std::runtime_error);
     EXPECT_THROW(bigint("-00"),std::runtime_error);
     EXPECT_THROW(bigint("00"),std::runtime_error);
     EXPECT_THROW(bigint("0.0"),std::runtime_error);
 }
 
-TEST(BigInt_test, Creation_Tests)
+TEST(Test_BigInt, Creation_Tests)
 {
     int my_int = 100;
     long my_long = 100;
@@ -93,6 +117,32 @@ TEST(BigInt_test, Creation_Tests)
     EXPECT_EQ(bigint(my_string), "100");
     EXPECT_EQ(bigint(my_string3), "-9223372036854775808");
     EXPECT_EQ(bigint(my_string4), "-9223372036854775809");
+}
+
+TEST(Test_BigInt, Stream_Tests)
+{
+    std::stringstream my_stream;
+    my_stream << bigint(55);
+    EXPECT_EQ(my_stream.str(), "55");
+
+    my_stream = std::stringstream();
+    my_stream.clear();
+
+    my_stream << bigint(-55);
+    EXPECT_EQ(my_stream.str(), "-55");
+    my_stream = std::stringstream();
+    my_stream << bigint(std::string{kHugeA});
+    EXPECT_EQ(my_stream.str(), std::string{kHugeA});
+}
+
+TEST(Test_BigInt, Bool_Tests)
+{
+    EXPECT_EQ(static_cast<bool>(bigint(1)), true);
+    EXPECT_EQ(static_cast<bool>(bigint(0)), false);
+    EXPECT_EQ(static_cast<bool>(bigint()), false);
+    EXPECT_EQ(static_cast<bool>(bigint(-1)), true);
+    EXPECT_EQ(static_cast<bool>(bigint(2)), true);
+    EXPECT_EQ(static_cast<bool>(bigint(std::string{kHugeA})), true);
 }
 
 TEST_P(BigInt_AddParamTest, Addition_Tests)
@@ -145,7 +195,7 @@ TEST_P(BigInt_ModParamTest, Modulus_Tests)
     EXPECT_EQ(mod, bigint{expected});
 }
 
-INSTANTIATE_TEST_SUITE_P(SmallValuesCases, BigInt_AddParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(SmallValueAdd, BigInt_AddParamTest, ::testing::Values(
 TestCase{"0", "0", "0"},
 TestCase{"0", "5", "5"},
 TestCase{"5", "0", "5"},
@@ -154,164 +204,225 @@ TestCase{"999", "1", "1000"},
 
 TestCase{"7", "-3", "4"},
 TestCase{"-7", "3", "-4"},
-TestCase{"-7", "-3", "-10"}
+TestCase{"-7", "-3", "-10"},
+TestCase{"-10", "10", "0"},
+TestCase{"10", "-10", "0"}
 ));
 
-INSTANTIATE_TEST_SUITE_P(LargeValuesCases, BigInt_AddParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(SmallValueSub, BigInt_SubParamTest, ::testing::Values(
+TestCase{"0", "0", "0"},
+TestCase{"0", "5", "-5"},
+TestCase{"5", "0", "5"},
+TestCase{"999", "1", "998"},
+TestCase{"1000", "1", "999"},
+
+TestCase{"7", "-3", "10"},
+TestCase{"-7", "3", "-10"},
+TestCase{"-7", "-3", "-4"},
+TestCase{"-10", "10", "-20"},
+TestCase{"10", "-10", "20"},
+TestCase{"-10", "-10", "0"}
+));
+
+INSTANTIATE_TEST_SUITE_P(SmallValueMul, BigInt_MulParamTest, ::testing::Values(
+TestCase{"0", "0", "0"},
+TestCase{"0", "5", "0"},
+TestCase{"5", "0", "0"},
+TestCase{"999", "1", "999"},
+
+TestCase{"7", "-3", "-21"},
+TestCase{"-7", "3", "-21"},
+TestCase{"-7", "-3", "21"}
+));
+
+INSTANTIATE_TEST_SUITE_P(SmallValueDiv, BigInt_DivParamTest, ::testing::Values(
+TestCase{"0", "5", "0"},
+TestCase{"999", "1", "999"},
+
+TestCase{"7", "-3", "-2"},
+TestCase{"-7", "3", "-2"},
+TestCase{"-7", "-3", "2"}
+));
+
+INSTANTIATE_TEST_SUITE_P(LargeValuesAdd, BigInt_AddParamTest, ::testing::Values(
 TestCase{kHugeA, kHugeB, AplusB},
-TestCase{kHugeB, kHugeA, AplusB}
+TestCase{kHugeB, kHugeA, AplusB},
+TestCase{kHugeA, "0", kHugeA}
 ));
 
-INSTANTIATE_TEST_SUITE_P(LargeValueCases, BigInt_SubParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LargeValueSub, BigInt_SubParamTest, ::testing::Values(
 TestCase{kHugeA, kHugeB, AminusB},
-TestCase{kHugeB, kHugeA, BminusA}
+TestCase{kHugeB, kHugeA, BminusA},
+TestCase{kHugeA, kHugeA, "0"},
+TestCase{kHugeA, "0", kHugeA},
+TestCase{"0", kHugeA, "-" + std::string{kHugeA}},
+TestCase{kNines, "9900000000000000000", "99999999999999999"}
 ));
 
-INSTANTIATE_TEST_SUITE_P(LargeValueCases, BigInt_MulParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LargeValueMul, BigInt_MulParamTest, ::testing::Values(
 TestCase{kHugeA, kHugeB, AmulB},
 TestCase{kHugeB, kHugeA, AmulB}
 ));
 
-INSTANTIATE_TEST_SUITE_P(LargeValueCases, BigInt_DivParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LargeValueDiv, BigInt_DivParamTest, ::testing::Values(
 TestCase{kHugeA, kHugeB, AdivB},
+TestCase{kHugeA, kHugeA, "1"},
+TestCase{"0", kHugeA, "0"},
+TestCase{kHugeA, "-" + std::string{kHugeB}, "-" + std::string{AdivB}},
 TestCase{kHugeB, kHugeA, "0"}
 ));
 
-INSTANTIATE_TEST_SUITE_P(LargeValueCases, BigInt_ModParamTest, ::testing::Values(
+INSTANTIATE_TEST_SUITE_P(LargeValueMod, BigInt_ModParamTest, ::testing::Values(
 TestCase{kHugeA, kHugeB, AmodB},
 TestCase{kHugeB, kHugeA, kHugeB},
 TestCase{kHugeA, kHugeA, "0"},
 TestCase{kHugeA, "1", "0"}
 ));
 
-TEST(BigInt_test, Division_Tests)
+TEST_F(Test_BigInt_F, Commutivity_Tests)
 {
-    EXPECT_THROW(bigint{77} / 0, std::domain_error);
-    EXPECT_THROW(bigint{std::string{kHugeA}} / 0, std::domain_error);
+    EXPECT_EQ(A + B, B + A);
+    EXPECT_EQ((A + B) + C, A + (B + C));
+    EXPECT_EQ(A * B, B * A);
+    EXPECT_EQ((A * B) * C, A * (B * C));
 }
 
-TEST(BigInt_test, Modulus_Tests)
+TEST_F(Test_BigInt_F, Distributivity_Tests)
 {
+    EXPECT_EQ(A * (B + C), (A * B) + (A * C));
+}
+
+TEST(Test_BigInt, Domain_Tests)
+{
+    EXPECT_THROW(bigint{0} / 0, std::domain_error);
+    EXPECT_THROW(bigint{77} / 0, std::domain_error);
+    EXPECT_THROW(bigint{std::string{kHugeA}} / 0, std::domain_error);
     EXPECT_THROW(bigint{77} % 0, std::domain_error);
 }
 
-TEST(BigInt_test, Comparison_Tests)
+TEST(Test_BigInt, Comparison_Tests)
 {
     bigint small_number = 9955;
-    bigint huge_number_1 = "123456789";
-    bigint huge_number_2 = "9999999999999999999";
+    bigint huge_number1{std::string{kHugeA}};
+    bigint huge_number2{std::string{kHugeB}};
     EXPECT_TRUE(small_number > 5);
     EXPECT_TRUE(small_number > 0);
     EXPECT_TRUE(small_number > -10);
-    EXPECT_TRUE(small_number > "-123456789");
-    EXPECT_FALSE(small_number > huge_number_1);
+    EXPECT_TRUE(huge_number1 > 0);
+    EXPECT_TRUE(huge_number1 > "0");
+    EXPECT_TRUE(huge_number1 > "-1");
 
-    EXPECT_TRUE(small_number < huge_number_1);
-    EXPECT_TRUE(small_number < huge_number_2);
-    EXPECT_TRUE(huge_number_1 < huge_number_2);
+    EXPECT_TRUE(small_number > huge_number1 * -1);
+    EXPECT_FALSE(small_number > huge_number1);
+    EXPECT_FALSE(small_number > small_number);
+    EXPECT_FALSE(huge_number1 > huge_number1);
+
+    EXPECT_TRUE(small_number < huge_number1);
+    EXPECT_TRUE(huge_number2 < huge_number1);
 
     EXPECT_TRUE(small_number == small_number);
+    EXPECT_TRUE(huge_number1 == huge_number1);
     EXPECT_TRUE(small_number >= small_number);
     EXPECT_TRUE(small_number <= small_number);
-    EXPECT_TRUE(huge_number_2 == huge_number_2);
-    EXPECT_TRUE(huge_number_2 >= huge_number_2);
-    EXPECT_TRUE(huge_number_2 <= huge_number_2);
-
-    EXPECT_TRUE(huge_number_2 > 0);
-    EXPECT_TRUE(huge_number_2 > "0");
-    EXPECT_TRUE(huge_number_2 > "-1");
+    EXPECT_TRUE(huge_number1 >= huge_number1);
+    EXPECT_TRUE(huge_number1 <= huge_number1);
 
     EXPECT_TRUE(bigint(0) == 0);
     EXPECT_TRUE(bigint(0) >= 0);
     EXPECT_TRUE(bigint(0) <= 0);
-    EXPECT_TRUE(bigint(0) == "0");
-    EXPECT_TRUE(bigint(0) >= "0");
-    EXPECT_TRUE(bigint(0) <= "0");
 
     EXPECT_TRUE(bigint(1) == 1);
     EXPECT_TRUE(bigint(1) >= 1);
     EXPECT_TRUE(bigint(1) <= 1);
-    EXPECT_TRUE(bigint(1) == "1");
-    EXPECT_TRUE(bigint(1) >= "1");
-    EXPECT_TRUE(bigint(1) <= "1");
 
-    EXPECT_TRUE(1 < huge_number_1);
-    EXPECT_FALSE(1 > huge_number_1);
-    EXPECT_TRUE(10 < huge_number_1);
-    EXPECT_TRUE("99" < huge_number_1);
-    EXPECT_TRUE(123456789 <= huge_number_1);
-    EXPECT_TRUE(123456789 == huge_number_1);
-    EXPECT_TRUE(123456789 >= huge_number_1);
+    EXPECT_TRUE(1 < huge_number1);
+    EXPECT_FALSE(1 > huge_number1);
+    EXPECT_TRUE(10 < huge_number1);
+    EXPECT_TRUE("99" < huge_number1);
+    EXPECT_TRUE(123456789 <= huge_number1);
+    EXPECT_FALSE(123456789 == huge_number1);
+    EXPECT_FALSE(123456789 >= huge_number1);
 }
 
-// TEST(BigInt_test, Speed_Tests)
-// {
-//     using std::chrono::high_resolution_clock;
-//     using std::chrono::microseconds;
-//     using std::chrono::duration_cast;
-//     for (size_t number_size : {5, 10 ,20, 30, 40, 50 ,60 ,70, 80, 90 ,100, 110, 120, 160, 190, 200, 500, 1000}) {
-//
-//         size_t number_count = 10;
-//
-//         std::vector<bigint> huge_numbers;
-//         huge_numbers.reserve(number_count);
-//         for (int i = 0; i < number_count; ++i) {
-//             huge_numbers.emplace_back(bigint::random(number_size));
-//         }
-//         std::sort(huge_numbers.begin(), huge_numbers.end(), std::greater<>());
-//
-//         bigint answer = 0;
-//
-//         auto formatTime = [](int64_t microseconds) -> std::string {
-//             std::ostringstream result;
-//
-//             if (microseconds >= 1000000) {
-//                 result << (microseconds / 1000000.0) << " seconds";
-//             } else if (microseconds >= 1000) {
-//                 result << (microseconds / 1000.0) << " milliseconds";
-//             } else {
-//                 result << microseconds << " microseconds";
-//             }
-//
-//             return result.str();
-//         };
-//
-//         // Addition timing
-//         auto t1 = high_resolution_clock::now();
-//         for (int i = 0; i < huge_numbers.size() - 1; ++i) {
-//             answer = huge_numbers[i] + huge_numbers[i + 1];
-//         }
-//         auto t2 = high_resolution_clock::now();
-//
-//         std::cout << number_count - 1 << " Additions: " << "[" << number_size << "] "
-//                   << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
-//
-//         // Subtraction timing
-//         t1 = high_resolution_clock::now();
-//         for (int i = 0; i < huge_numbers.size() - 1; ++i) {
-//             answer = huge_numbers[i] - huge_numbers[i + 1];
-//         }
-//         t2 = high_resolution_clock::now();
-//         std::cout  << " Subtractions: " << "[" << number_size << "] "
-//                    << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
-//
-//         // Multiplication timing
-//         t1 = high_resolution_clock::now();
-//         for (int i = 0; i < huge_numbers.size() - 1; ++i) {
-//             answer = huge_numbers[i] * huge_numbers[i + 1];
-//         }
-//         t2 = high_resolution_clock::now();
-//         std::cout  << " Multiplications: " << "[" << number_size << "] "
-//                   << formatTime(duration_cast<microseconds>(t2 - t1).count()) ;
-//
-//         // Division timing
-//         t1 = high_resolution_clock::now();
-//         for (const auto &huge_number: huge_numbers) {
-//             answer = huge_number / 2;
-//         }
-//         t2 = high_resolution_clock::now();
-//         std::cout  << " Division: " << "[" << number_size << "] "
-//                    << formatTime(duration_cast<microseconds>(t2 - t1).count()) << std::endl;
-//     }
-// }
+TEST_F(Test_BigInt_Performance, Speed_Tests)
+{
+    using std::chrono::steady_clock;
+    using std::chrono::microseconds;
+    using std::chrono::duration_cast;
+
+    constexpr size_t number_count = 500;
+    const std::vector<size_t> sizes = {5, 20, 50, 100, 1000};
+
+    auto formatTime = [](const long long micros) -> std::string {
+        if (micros >= 1000000) return std::to_string(micros / 1000000.0) + " s";
+        if (micros >= 1000) return std::to_string(micros / 1000.0) + " ms";
+        return std::to_string(micros) + " us";
+    };
+
+    auto measure_execution = [&](const char* label, const size_t size, auto func) {
+        auto t1 = steady_clock::now();
+        func();
+        auto t2 = steady_clock::now();
+
+        const long long duration = duration_cast<microseconds>(t2 - t1).count();
+        const double avg_per_op = static_cast<double>(duration) / number_count;
+
+        std::cout <<  std::setw(14) << std::left << label << " [" << size << " digits]: "
+                  << formatTime(duration)
+                  << " (Avg: " << avg_per_op << " us/op)" << std::endl;
+    };
+
+    volatile int dce_sink = 0;
+
+    std::cout << "--- Starting Performance Tests (Sample size: " << number_count << ") ---" << std::endl;
+    for (const size_t number_size : sizes) {
+
+        std::vector<bigint> huge_numbers;
+        huge_numbers.reserve(number_count);
+        for (int i = 0; i < number_count; ++i) {
+            huge_numbers.emplace_back(bigint::random(number_size));
+        }
+        // Ensure values stay defined
+        std::sort(huge_numbers.begin(), huge_numbers.end(), std::greater<>());
+
+        bigint answer = 0;
+
+        // Addition
+        measure_execution("Addition", number_size, [&]() {
+            for (size_t i = 0; i < huge_numbers.size() - 1; ++i) {
+                answer = huge_numbers[i] + huge_numbers[i + 1];
+                // Tiny check to force evaluation
+                if (answer == 0) dce_sink++;
+            }
+        });
+
+        // Subtraction
+        measure_execution("Subtraction", number_size, [&]() {
+            for (size_t i = 0; i < huge_numbers.size() - 1; ++i) {
+                answer = huge_numbers[i] - huge_numbers[i + 1];
+                // Tiny check to force evaluation
+                if (answer == 0) dce_sink++;
+            }
+        });
+
+        // Multiplication
+        measure_execution("Multiplication", number_size, [&]() {
+            for (size_t i = 0; i < huge_numbers.size() - 1; ++i) {
+                answer = huge_numbers[i] * huge_numbers[i + 1];
+                // Tiny check to force evaluation
+                if (answer == 0) dce_sink++;
+            }
+        });
+
+
+        measure_execution("Division", number_size, [&]() {
+            for (size_t i = 0; i < huge_numbers.size() - 1; ++i) {
+                answer = huge_numbers[i] / 55;
+                // Tiny check to force evaluation
+                if (answer == 0) dce_sink++;
+            }
+        });
+        std::cout << std::endl;
+    }
+}
 
