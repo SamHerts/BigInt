@@ -47,7 +47,7 @@ namespace BigInt {
         //                   LLONG_MAX = 9'223'372'036'854'775'807
         static constexpr auto MAX_SIZE = 1'000'000'000'000'000'000LL;
 
-        bigint() = default;
+        bigint() {is_neg = false; vec.emplace_back(0);}
 
         bigint(const std::string &s)
         {
@@ -272,9 +272,8 @@ namespace BigInt {
         friend bool operator>=(const bigint &l, const bigint &r)
         { return !(l < r); }
 
-        explicit operator bool() const
-        {
-            return !(this->vec.empty()) || this->vec.front();
+        explicit operator bool() const {
+            return !(vec.size() == 1 && vec.front() == 0);
         }
 
         friend std::hash<bigint>;
@@ -578,7 +577,7 @@ namespace BigInt {
 
         if (is_negative(lhs) && is_negative(rhs))
         {
-            return (abs(lhs) * abs(lhs));
+            return (abs(lhs) * abs(rhs));
         }
         if (is_negative(lhs) || is_negative(rhs))
         {
