@@ -381,12 +381,15 @@ namespace BigInt {
 
         // Function Definitions for Internal Uses
 
-        static bigint trim(const bigint& input) {
-            auto temp = input;
-            while (temp.vec.front() == 0){
-                temp.vec.erase(temp.vec.begin());
+        static bigint trim(bigint input) {
+            while (input.vec.size() > 1 && input.vec.front() == 0) {
+                input.vec.erase(input.vec.begin());
             }
-            return temp;
+            if (input.vec.empty()) {
+                input.vec.push_back(0);
+                input.is_neg = false;
+            }
+            return input;
         }
 
         static std::vector<long long> string_to_vector(std::string input);
