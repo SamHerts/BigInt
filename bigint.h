@@ -525,7 +525,7 @@ namespace BigInt {
         }
 
         std::reverse(result.begin(), result.end());
-        return trim(bigint(std::move(result)));
+        return {std::move(result)};
     }
 
     inline std::pair<int, long long> subtract_with_borrow(const long long lhs, const long long rhs)
