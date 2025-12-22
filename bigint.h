@@ -377,7 +377,7 @@ namespace BigInt {
 
     private:
         std::vector<long long> vec{};
-        bool is_neg{};
+        bool is_neg{false};
 
         // Function Definitions for Internal Uses
 
