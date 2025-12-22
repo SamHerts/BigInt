@@ -145,6 +145,14 @@ TEST(Test_BigInt, Bool_Tests)
     EXPECT_EQ(static_cast<bool>(bigint(std::string{kHugeA})), true);
 }
 
+TEST(Test_BigInt, Negate_Tests)
+{
+    EXPECT_EQ(-bigint(0), 0);
+    EXPECT_EQ(-bigint(1), -1);
+    EXPECT_EQ(-bigint(-1), 1);
+    EXPECT_EQ(-bigint(std::string{kHugeA}), bigint("-" + std::string{kHugeA}));
+}
+
 TEST_P(BigInt_AddParamTest, Addition_Tests)
 {
     const auto&[lhs, rhs, expected] = GetParam();
