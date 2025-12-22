@@ -246,6 +246,21 @@ namespace BigInt {
             return tmp;
         }
 
+        bigint operator-() const &
+        {
+            bigint temp = *this;
+            if (temp == 0) return temp;
+            temp.is_neg = !this->is_neg;
+            return temp;
+        }
+
+        bigint operator-() &&
+        {
+            if (*this == 0) return *this;
+            this->is_neg = !this->is_neg;
+            return *this;
+        }
+
         friend bool operator==(const bigint &l, const bigint &r)
         {
             if (l.is_neg != r.is_neg)
@@ -300,14 +315,17 @@ namespace BigInt {
 
         static bigint abs(const bigint &s)
         {
-            if (is_negative(s))
-            {
-                bigint temp = s;
-                temp.is_neg = false;
+            if (!is_negative(s)) return s;
 
-                return temp;
-            }
+            bigint temp = s;
+            temp.is_neg = false;
 
+            return temp;
+        }
+
+        static bigint abs(bigint&& s)
+        {
+            s.is_neg = false;
             return s;
         }
 
