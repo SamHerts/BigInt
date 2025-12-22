@@ -510,11 +510,12 @@ namespace BigInt {
             }
 
             if (sum >= MAX_SIZE) {
-                carry = sum / MAX_SIZE;
-                sum %= MAX_SIZE;
+                sum -= MAX_SIZE;
+                carry = 1;
             } else {
                 carry = 0;
             }
+
             result.push_back(sum);
             ++it_l;
         }
