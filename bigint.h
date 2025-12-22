@@ -504,7 +504,7 @@ namespace BigInt {
         std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
 
         std::vector<long long> final(lhs.vec.size() + 1);
-        for (int i = carry_result.size() - 1; i >= 0; --i) {
+        for (int i = carry_result.size() - 1; i > 0; --i) {
             final[i] += carry_result[i].second;
             final[i - 1] += carry_result[i].first;
         }
