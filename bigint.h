@@ -436,8 +436,14 @@ namespace BigInt {
         static bigint negate(const bigint& input)
         {
             bigint temp = input;
-            temp.is_neg = true;
+            temp.is_neg = !temp.is_neg;
             return temp;
+        }
+
+        static bigint negate(bigint&& input)
+        {
+            input.is_neg = !input.is_neg;
+            return input;
         }
 
         static bool less_than(const bigint& lhs, const bigint& rhs)
