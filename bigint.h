@@ -157,7 +157,11 @@ namespace BigInt {
 
         bigint operator+=(const bigint &rhs)
         {
-            *this = add(*this, rhs);
+            if (*this == 0 && rhs == 0) return *this;
+            if (*this == 0) {*this = rhs; return *this;}
+            if (rhs != 0) {
+                *this = add(*this, rhs);
+            }
             return *this;
         }
 
@@ -246,6 +250,21 @@ namespace BigInt {
             return tmp;
         }
 
+        bigint operator-() const &
+        {
+            bigint temp = *this;
+            if (temp == 0) return temp;
+            temp.is_neg = !this->is_neg;
+            return temp;
+        }
+
+        bigint operator-() &&
+        {
+            if (*this == 0) return *this;
+            this->is_neg = !this->is_neg;
+            return *this;
+        }
+
         friend bool operator==(const bigint &l, const bigint &r)
         {
             if (l.is_neg != r.is_neg)
@@ -300,14 +319,17 @@ namespace BigInt {
 
         static bigint abs(const bigint &s)
         {
-            if (is_negative(s))
-            {
-                bigint temp = s;
-                temp.is_neg = false;
+            if (!is_negative(s)) return s;
 
-                return temp;
-            }
+            bigint temp = s;
+            temp.is_neg = false;
 
+            return temp;
+        }
+
+        static bigint abs(bigint&& s)
+        {
+            s.is_neg = false;
             return s;
         }
 
@@ -355,20 +377,32 @@ namespace BigInt {
             return sum;
         }
 
+        /**
+         * @brief Generates a random positive bigint of a specified length.
+         *
+         * This method ensures the resulting bigint is valid by using a random device
+         * and engine for non-deterministic seeding.
+         *
+         * @param length The number of digits the generated bigint should have.
+         * @return A bigint object representing the randomly generated number.
+         */
         static bigint random(size_t length);
 
     private:
         std::vector<long long> vec{};
-        bool is_neg{};
+        bool is_neg{false};
 
         // Function Definitions for Internal Uses
 
-        static bigint trim(const bigint& input) {
-            auto temp = input;
-            while (temp.vec.front() == 0){
-                temp.vec.erase(temp.vec.begin());
+        static bigint trim(bigint input) {
+            while (input.vec.size() > 1 && input.vec.front() == 0) {
+                input.vec.erase(input.vec.begin());
             }
-            return temp;
+            if (input.vec.empty()) {
+                input.vec.push_back(0);
+                input.is_neg = false;
+            }
+            return input;
         }
 
         static std::vector<long long> string_to_vector(std::string input);
@@ -418,8 +452,14 @@ namespace BigInt {
         static bigint negate(const bigint& input)
         {
             bigint temp = input;
-            temp.is_neg = true;
+            temp.is_neg = !temp.is_neg;
             return temp;
+        }
+
+        static bigint negate(bigint&& input)
+        {
+            input.is_neg = !input.is_neg;
+            return input;
         }
 
         static bool less_than(const bigint& lhs, const bigint& rhs)
@@ -455,61 +495,50 @@ namespace BigInt {
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
     }
 
-    inline std::pair<int, long long> add_with_carry(const long long lhs, const long long rhs)
-    {
-        auto sum = lhs + rhs;
-
-        if (sum >= bigint::MAX_SIZE)
-        {
-            // Carry needs to happen
-            auto carry = sum / bigint::MAX_SIZE;
-            auto result = sum % bigint::MAX_SIZE;
-            return {carry, result};
-        }
-
-        return {0, sum};
-    }
-
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
-        // Ensure LHS is larger than RHS, and both are positive
-        if (lhs == 0) return rhs;
-        if (rhs == 0) return lhs;
-        if (is_negative(lhs) && is_negative(rhs))
-        {
-            return negate(add(abs(lhs) ,abs(rhs)));
-        }
-        if (is_negative(lhs))
-        {
-            return rhs - abs(lhs);
-        }
-        if (is_negative(rhs))
-        {
-            return lhs - abs(rhs);
-        }
-        if (lhs < rhs)
-        {
-            return add(rhs, lhs);
+        bool negate_answer = false;
+        // Ensure both are positive
+        if (is_negative(lhs) && is_negative(rhs)) negate_answer = true;
+        else if (is_negative(lhs)) return subtract(rhs, abs(lhs));
+        else if (is_negative(rhs)) return subtract(lhs, abs(rhs));
+
+        // Ensure LHS is larger than RHS
+        if (lhs.vec.size() < rhs.vec.size()) return add(rhs, lhs);
+
+        // Prepare result vector with enough space (max size + 1 for potential carry)
+        std::vector<long long> result;
+        result.reserve(lhs.vec.size() + 1);
+
+        long long carry = 0;
+        auto it_l = lhs.vec.rbegin();
+        auto it_r = rhs.vec.rbegin();
+
+        while (it_l != lhs.vec.rend()) {
+            long long sum = *it_l + carry;
+            if (it_r != rhs.vec.rend()) {
+                sum += *it_r;
+                ++it_r;
+            }
+
+            if (sum >= MAX_SIZE) {
+                sum -= MAX_SIZE;
+                carry = 1;
+            } else {
+                carry = 0;
+            }
+
+            result.push_back(sum);
+            ++it_l;
         }
 
-        bigint full_rhs =  rhs;
-        std::vector<std::pair<int, long long>> carry_result(lhs.vec.size() + 1);
-
-        // Fill the smaller to match the larger size
-        while (lhs.vec.size() > full_rhs.vec.size())
-        {
-            full_rhs.vec.insert(full_rhs.vec.begin(), 0);
+        if (carry > 0) {
+            result.push_back(carry);
         }
 
-        std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), carry_result.rbegin(), add_with_carry);
-
-        std::vector<long long> final(lhs.vec.size() + 1);
-        for (int i = carry_result.size() - 1; i > 0; --i) {
-            final[i] += carry_result[i].second;
-            final[i - 1] += carry_result[i].first;
-        }
-
-        return trim(bigint(final));
+        std::reverse(result.begin(), result.end());
+        bigint result_bigint {std::move(result)};
+        return negate_answer ? negate(result_bigint) : result_bigint;
     }
 
     inline std::pair<int, long long> subtract_with_borrow(const long long lhs, const long long rhs)
@@ -843,8 +872,8 @@ namespace BigInt {
         return true;
     }
 
-    inline bigint bigint::random(size_t length) {
-        const char charset[] = "0123456789";
+    inline bigint bigint::random(const size_t length) {
+        constexpr char charset[] = "0123456789";
         std::default_random_engine rng(std::random_device{}());
 
         // Distribution for the first digit (1-9)
