@@ -377,6 +377,15 @@ namespace BigInt {
             return sum;
         }
 
+        /**
+         * @brief Generates a random positive bigint of a specified length.
+         *
+         * This method ensures the resulting bigint is valid by using a random device
+         * and engine for non-deterministic seeding.
+         *
+         * @param length The number of digits the generated bigint should have.
+         * @return A bigint object representing the randomly generated number.
+         */
         static bigint random(size_t length);
 
     private:
