@@ -157,7 +157,11 @@ namespace BigInt {
 
         bigint operator+=(const bigint &rhs)
         {
-            *this = add(*this, rhs);
+            if (*this == 0 && rhs == 0) return *this;
+            if (*this == 0) {*this = rhs; return *this;}
+            if (rhs != 0) {
+                *this = add(*this, rhs);
+            }
             return *this;
         }
 
@@ -484,14 +488,13 @@ namespace BigInt {
 
     inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
     {
-        // Ensure LHS is larger than RHS, and both are positive
-        if (lhs == 0) return rhs;
-        if (rhs == 0) return lhs;
-        if (is_negative(lhs) && is_negative(rhs)) return -add(abs(lhs), abs(rhs));
-        if (is_negative(lhs)) return rhs - abs(lhs);
-        if (is_negative(rhs)) return lhs - abs(rhs);
-        if (lhs < rhs) return add(rhs, lhs);
+        bool negate_answer = false;
+        // Ensure both are positive
+        if (is_negative(lhs) && is_negative(rhs)) negate_answer = true;
+        else if (is_negative(lhs)) return subtract(rhs, abs(lhs));
+        else if (is_negative(rhs)) return subtract(lhs, abs(rhs));
 
+        // Ensure LHS is larger than RHS
         if (lhs.vec.size() < rhs.vec.size()) return add(rhs, lhs);
 
         // Prepare result vector with enough space (max size + 1 for potential carry)
@@ -525,7 +528,8 @@ namespace BigInt {
         }
 
         std::reverse(result.begin(), result.end());
-        return {std::move(result)};
+        bigint result_bigint {std::move(result)};
+        return negate_answer ? negate(result_bigint) : result_bigint;
     }
 
     inline std::pair<int, long long> subtract_with_borrow(const long long lhs, const long long rhs)
