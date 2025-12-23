@@ -543,19 +543,6 @@ namespace BigInt {
         return negate_answer ? negate(result_bigint) : result_bigint;
     }
 
-    inline std::pair<int, long long> subtract_with_borrow(const long long lhs, const long long rhs)
-    {
-        if (lhs < rhs)
-        {
-            // Borrow needs to happen
-            auto result = (lhs + bigint::MAX_SIZE) - rhs;
-            return {1, result}; // 1 represents a borrow
-        }
-
-        auto result = lhs - rhs;
-        return {0, result}; // 0 means no borrow
-    }
-
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
     {
         // Ensure LHS is larger than RHS, and both are positive
@@ -579,25 +566,31 @@ namespace BigInt {
             return negate(subtract(rhs, lhs));
         }
 
-        bigint full_rhs =  rhs;
-        std::vector<std::pair<int, long long>> borrow_result(lhs.vec.size());
-        // Fill the smaller to match the larger size
-        while (lhs.vec.size() > full_rhs.vec.size())
-        {
-            full_rhs.vec.insert(full_rhs.vec.begin(), 0);
+        std::vector<long long> result;
+        result.reserve(lhs.vec.size());
+        long long borrow = 0;
+
+        auto it_l = lhs.vec.rbegin();
+        auto it_r = rhs.vec.rbegin();
+
+        while (it_l != lhs.vec.rend()) {
+            long long l_val = *it_l;
+            long long r_val = (it_r != rhs.vec.rend()) ? *it_r : 0;
+
+            long long diff = l_val - r_val - borrow;
+            if (diff < 0) {
+                diff += MAX_SIZE;
+                borrow = 1;
+            } else {
+                borrow = 0;
+            }
+            result.push_back(diff);
+
+            ++it_l;
+            if (it_r != rhs.vec.rend()) ++it_r;
         }
-
-        std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), borrow_result.rbegin(),
-                       subtract_with_borrow);
-
-        std::vector<long long> final(lhs.vec.size());
-        for (int i = borrow_result.size() - 1; i >= 0; --i) {
-            final[i] += borrow_result[i].second;
-            if (borrow_result[i].first)
-                final[i - 1] -= borrow_result[i].first;
-        }
-
-        return trim(final);
+        std::reverse(result.begin(), result.end());
+        return trim(bigint(std::move(result)));
     }
 
     inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
