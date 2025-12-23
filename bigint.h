@@ -174,6 +174,8 @@ namespace BigInt {
 
         bigint operator-=(const bigint &rhs)
         {
+            if (rhs == 0 ) { return *this;}
+            if (*this == rhs) {*this = 0; return *this;}
             *this = subtract(*this, rhs);
             return *this;
         }
@@ -557,17 +559,17 @@ namespace BigInt {
     inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
     {
         // Ensure LHS is larger than RHS, and both are positive
-        if (rhs == 0) return lhs;
-        if (lhs == rhs) return 0;
-
+        // (-A) - (-B) == B - A
         if (is_negative(lhs) && is_negative(rhs))
         {
             return subtract(abs(rhs), abs(lhs));
         }
+        // (A) - (-B) == A + B
         if (is_negative(rhs))
         {
             return add(lhs, abs(rhs));
         }
+        // (-A) - (B) == -(A + B)
         if (is_negative(lhs))
         {
             return add(lhs, negate(rhs));
