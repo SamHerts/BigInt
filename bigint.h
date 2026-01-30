@@ -41,36 +41,33 @@
 #include <iomanip>
 
 namespace BigInt {
-
-    class bigint {
+    class bigint
+    {
     public:
         //                   LLONG_MAX = 9'223'372'036'854'775'807
         static constexpr auto MAX_SIZE = 1'000'000'000'000'000'000LL;
 
-        bigint() {is_neg = false; vec.emplace_back(0);}
+        bigint() : vec({0}) {}
 
-        bigint(const std::string &s)
-        {
-            if (!is_bigint(s)) {throw std::runtime_error("Invalid Big Integer.");}
-            if(s[0] == '-')
-            {
+        bigint(const std::string& s) {
+            if (!is_bigint(s)) { throw std::runtime_error("Invalid Big Integer."); }
+            if (s[0] == '-') {
                 *this = bigint(s.substr(1));
                 if (*this == 0)
                     throw std::runtime_error("Invalid Big Integer.");
                 is_neg = true;
             }
-            else
-            {
+            else {
+                is_neg = false;
                 vec = string_to_vector(s);
             }
         }
 
-        bigint(const char c)
-        {
-            int temp = static_cast<unsigned char>(c);
-            if (isdigit(temp)) {
+        bigint(const char c) {
+            if (const int temp = static_cast<unsigned char>(c); isdigit(temp)) {
                 *this = bigint(char_to_int(c));
-            } else {
+            }
+            else {
                 throw std::runtime_error("Invalid Big Integer has been fed.");
             }
         }
@@ -83,18 +80,14 @@ namespace BigInt {
 
         bigint(const double n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(const long long n) {
-            if (n == 0)
-            {
+        bigint(const long long n): is_neg(n < 0) {
+            if (n == 0) {
                 is_neg = false;
                 vec.push_back(0);
                 return;
             }
-            is_neg = (n<0);
-
             unsigned long long val = n;
-            if (is_neg)
-            {
+            if (is_neg) {
                 val = 0ULL - val;
             }
             vec.reserve(2);
@@ -107,25 +100,26 @@ namespace BigInt {
         }
 
         bigint(unsigned long long n) {
-
-          if ( n >= MAX_SIZE )
-          {
-            vec.emplace_back(n / MAX_SIZE);
-            vec.emplace_back(n % MAX_SIZE);
-          }
-          else{
-            vec.emplace_back(n);
-          }
+            if (n >= MAX_SIZE) {
+                vec.emplace_back(n / MAX_SIZE);
+                vec.emplace_back(n % MAX_SIZE);
+            }
+            else {
+                vec.emplace_back(n);
+            }
         }
 
-        bigint(const bigint &n) { *this = n; }
+        bigint(const bigint& n) = default;
 
         bigint(const char* n) : bigint(std::string(n)) {}
 
-        bigint(std::vector<long long> n) {this->vec = std::move(n);}
+        /* If initializing from a vector that should be negative, the negative value must be set afterward.
+         * bigint alpha(std::vector(...));
+         * -alpha;
+         */
+        bigint(std::vector<long long> n) : vec(std::move(n)) {}
 
-        bigint& operator=(const bigint& other)
-        {
+        bigint& operator=(const bigint& other) {
             if (this == &other)
                 return *this;
             this->is_neg = other.is_neg;
@@ -134,162 +128,151 @@ namespace BigInt {
             return *this;
         }
 
-        explicit operator int() const
-        {
+        explicit operator int() const {
             return static_cast<int>(vec.back());
         }
 
-        explicit operator long long() const
-        {
-          return vec.back();
+        explicit operator long long() const {
+            return vec.back();
         }
 
-        explicit operator std::string() const
-        {
-              return (this->is_neg ? "-" : "") + vector_to_string(this->vec);
+        explicit operator std::string() const {
+            return (this->is_neg ? "-" : "") + vector_to_string(this->vec);
         }
 
-        friend std::ostream &operator<<(std::ostream &stream, const bigint &n)
-        {
+        friend std::ostream& operator<<(std::ostream& stream, const bigint& n) {
             stream << std::string(n);
             return stream;
         }
 
-        bigint operator+=(const bigint &rhs)
-        {
+        bigint operator+=(const bigint& rhs) {
             if (*this == 0 && rhs == 0) return *this;
-            if (*this == 0) {*this = rhs; return *this;}
+            if (*this == 0) {
+                *this = rhs;
+                return *this;
+            }
             if (rhs != 0) {
                 *this = add(*this, rhs);
             }
             return *this;
         }
 
-        bigint operator+(const bigint &rhs) const
-        {
+        bigint operator+(const bigint& rhs) const {
             bigint result = *this;
             result += rhs;
             return result;
         }
 
-        bigint operator-=(const bigint &rhs)
-        {
+        bigint operator-=(const bigint& rhs) {
+            if (rhs == 0) { return *this; }
+            if (*this == rhs) {
+                *this = 0;
+                return *this;
+            }
             *this = subtract(*this, rhs);
             return *this;
         }
 
-        bigint operator-(const bigint &rhs) const
-        {
+        bigint operator-(const bigint& rhs) const {
             bigint result = *this;
             result -= rhs;
             return result;
         }
 
-        bigint operator*=(const bigint &rhs)
-        {
+        bigint operator*=(const bigint& rhs) {
             *this = multiply(*this, rhs);
             return *this;
         }
 
-        bigint operator*(const bigint &rhs) const
-        {
+        bigint operator*(const bigint& rhs) const {
             bigint result = *this;
             result *= rhs;
             return result;
         }
 
-        bigint &operator/=(const bigint &rhs)
-        {
+        bigint& operator/=(const bigint& rhs) {
             *this = divide(*this, rhs);
             return *this;
         }
 
-        bigint operator/(const bigint &rhs) const
-        {
+        bigint operator/(const bigint& rhs) const {
             bigint result = *this;
             result /= rhs;
             return result;
         }
 
-        bigint operator%=(const bigint &rhs)
-        {
+        bigint operator%=(const bigint& rhs) {
             *this = mod(*this, rhs);
             return *this;
         }
 
-        bigint operator%(const bigint &rhs) const
-        {
+        bigint operator%(const bigint& rhs) const {
             bigint result = *this;
             result %= rhs;
             return result;
         }
 
-        bigint operator++()
-        {
+        bigint operator++() {
             *this += 1;
             return *this;
         }
 
-        bigint operator++(int)
-        {
+        bigint operator++(int) {
             bigint tmp(*this);
             operator++();
             return tmp;
         }
 
-        bigint operator--()
-        {
+        bigint operator--() {
             *this -= 1;
             return *this;
         }
 
-        bigint operator--(int)
-        {
+        bigint operator--(int) {
             bigint tmp(*this);
             operator--();
             return tmp;
         }
 
-        bigint operator-() const &
-        {
+        bigint operator-() const & {
             bigint temp = *this;
             if (temp == 0) return temp;
             temp.is_neg = !this->is_neg;
             return temp;
         }
 
-        bigint operator-() &&
-        {
+        bigint operator-() && {
             if (*this == 0) return *this;
             this->is_neg = !this->is_neg;
             return *this;
         }
 
-        friend bool operator==(const bigint &l, const bigint &r)
-        {
-            if (l.is_neg != r.is_neg)
-            {
+        friend bool operator==(const bigint& l, const bigint& r) {
+            if (l.is_neg != r.is_neg) {
                 return false;
             }
             return l.vec == r.vec;
         }
 
-        friend bool operator!=(const bigint &l, const bigint &r)
-        { return !(l == r); }
+        friend bool operator!=(const bigint& l, const bigint& r) {
+            return !(l == r);
+        }
 
-        friend bool operator<(const bigint &lhs, const bigint &rhs)
-        {
+        friend bool operator<(const bigint& lhs, const bigint& rhs) {
             return less_than(lhs, rhs);
         }
 
-        friend bool operator>(const bigint &l, const bigint &r)
-        { return r < l; }
+        friend bool operator>(const bigint& l, const bigint& r) {
+            return r < l;
+        }
 
-        friend bool operator<=(const bigint &l, const bigint &r)
-        { return r >= l; }
+        friend bool operator<=(const bigint& l, const bigint& r) {
+            return r >= l;
+        }
 
-        friend bool operator>=(const bigint &l, const bigint &r)
-        { return !(l < r); }
+        friend bool operator>=(const bigint& l, const bigint& r) {
+            return !(l < r);
+        }
 
         explicit operator bool() const {
             return !(vec.size() == 1 && vec.front() == 0);
@@ -297,28 +280,24 @@ namespace BigInt {
 
         friend std::hash<bigint>;
 
-        static bigint pow(const bigint &base, const bigint &exponent)
-        {
+        static bigint pow(const bigint& base, const bigint& exponent) {
             if (exponent == 0) return 1;
             if (exponent == 1) return base;
 
             const bigint tmp = pow(base, exponent / 2);
-            if (exponent % 2 == 0) {return tmp * tmp;}
+            if (exponent % 2 == 0) { return tmp * tmp; }
             return base * tmp * tmp;
         }
 
-        static bigint maximum(const bigint &lhs, const bigint &rhs)
-        {
+        static bigint maximum(const bigint& lhs, const bigint& rhs) {
             return lhs > rhs ? lhs : rhs;
         }
 
-        static bigint minimum(const bigint &lhs, const bigint &rhs)
-        {
+        static bigint minimum(const bigint& lhs, const bigint& rhs) {
             return lhs > rhs ? rhs : lhs;
         }
 
-        static bigint abs(const bigint &s)
-        {
+        static bigint abs(const bigint& s) {
             if (!is_negative(s)) return s;
 
             bigint temp = s;
@@ -327,49 +306,44 @@ namespace BigInt {
             return temp;
         }
 
-        static bigint abs(bigint&& s)
-        {
+        static bigint abs(bigint&& s) {
             s.is_neg = false;
             return s;
         }
 
-        static bigint sqrt(const bigint &);
+        static bigint sqrt(const bigint&);
 
-        static bigint log2(const bigint &);
+        static bigint log2(const bigint&);
 
-        static bigint log10(const bigint &);
+        static bigint log10(const bigint&);
 
-        static bigint logwithbase(const bigint &, const bigint &);
+        static bigint logwithbase(const bigint&, const bigint&);
 
-        static bigint antilog2(const bigint &);
+        static bigint antilog2(const bigint&);
 
-        static bigint antilog10(const bigint &);
+        static bigint antilog10(const bigint&);
 
-        static void swap(bigint &, bigint &);
+        static void swap(bigint&, bigint&);
 
-        static bigint gcd(const bigint &, const bigint &);
+        static bigint gcd(const bigint&, const bigint&);
 
-        static bigint lcm(const bigint &lhs, const bigint &rhs)
-        {
+        static bigint lcm(const bigint& lhs, const bigint& rhs) {
             return (lhs * rhs) / gcd(lhs, rhs);
         }
 
-        static bigint factorial(const bigint &);
+        static bigint factorial(const bigint&);
 
-        static bool is_even(const bigint &input)
-        {
+        static bool is_even(const bigint& input) {
             return !(input.vec.back() & 1);
         }
 
-        static bool is_negative(const bigint &input)
-        {
+        static bool is_negative(const bigint& input) {
             return input.is_neg;
         }
 
-        static bool is_prime(const bigint &);
+        static bool is_prime(const bigint&);
 
-        static bigint sum_of_digits(const bigint& input)
-        {
+        static bigint sum_of_digits(const bigint& input) {
             bigint sum;
             for (auto base : input.vec) {
                 for (sum = 0; base > 0; sum += base % 10, base /= 10);
@@ -389,8 +363,9 @@ namespace BigInt {
         static bigint random(size_t length);
 
     private:
-        std::vector<long long> vec{};
         bool is_neg{false};
+        std::vector<long long> vec;
+
 
         // Function Definitions for Internal Uses
 
@@ -409,17 +384,16 @@ namespace BigInt {
 
         static std::string vector_to_string(const std::vector<long long>& input);
 
-        static bigint add(const bigint &, const bigint &);
+        static bigint add(const bigint&, const bigint&);
 
-        static bigint subtract(const bigint &, const bigint &);
+        static bigint subtract(const bigint&, const bigint&);
 
-        static bigint multiply(const bigint &, const bigint &);
+        static bigint multiply(const bigint&, const bigint&);
 
-        static bigint divide(const bigint &, const bigint &);
+        static bigint divide(const bigint&, const bigint&);
 
-        static bigint mod(const bigint &lhs, const bigint &rhs)
-        {
-            if (rhs == 0) {throw std::domain_error("Attempted to modulo by zero.");}
+        static bigint mod(const bigint& lhs, const bigint& rhs) {
+            if (rhs == 0) { throw std::domain_error("Attempted to modulo by zero."); }
             if (lhs < rhs) {
                 return lhs;
             }
@@ -427,55 +401,46 @@ namespace BigInt {
                 return 0;
             }
 
-            if (rhs == 2)
-            {
+            if (rhs == 2) {
                 return !is_even(lhs);
             }
 
             return lhs - ((lhs / rhs) * rhs);
         }
 
-        static bool is_bigint(const std::string &);
+        static bool is_bigint(const std::string&);
 
         static int count_digits(const bigint&);
 
-        static int char_to_int(const char input)
-        {
+        static int char_to_int(const char input) {
             return input - '0';
         }
 
-        static int int_to_char(const int input)
-        {
+        static int int_to_char(const int input) {
             return input + '0';
         }
 
-        static bigint negate(const bigint& input)
-        {
+        static bigint negate(const bigint& input) {
             bigint temp = input;
             temp.is_neg = !temp.is_neg;
             return temp;
         }
 
-        static bigint negate(bigint&& input)
-        {
+        static bigint negate(bigint&& input) {
             input.is_neg = !input.is_neg;
             return input;
         }
 
-        static bool less_than(const bigint& lhs, const bigint& rhs)
-        {
-            if (is_negative(lhs) && is_negative(rhs))
-            {
+        static bool less_than(const bigint& lhs, const bigint& rhs) {
+            if (is_negative(lhs) && is_negative(rhs)) {
                 return less_than(abs(rhs), abs(lhs));
             }
 
-            if (is_negative(lhs) || is_negative(rhs))
-            {
+            if (is_negative(lhs) || is_negative(rhs)) {
                 return is_negative(lhs);
             }
 
-            if(lhs.vec.size() == rhs.vec.size())
-            {
+            if (lhs.vec.size() == rhs.vec.size()) {
                 return lhs.vec < rhs.vec;
             }
 
@@ -484,8 +449,7 @@ namespace BigInt {
     };
 
 
-    inline bool bigint::is_bigint(const std::string &s)
-    {
+    inline bool bigint::is_bigint(const std::string& s) {
         if (s.empty() || (s.length() > 1 && s[0] == '0'))
             return false;
 
@@ -495,8 +459,7 @@ namespace BigInt {
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
     }
 
-    inline bigint bigint::add(const bigint &lhs, const bigint &rhs)
-    {
+    inline bigint bigint::add(const bigint& lhs, const bigint& rhs) {
         bool negate_answer = false;
         // Ensure both are positive
         if (is_negative(lhs) && is_negative(rhs)) negate_answer = true;
@@ -524,7 +487,8 @@ namespace BigInt {
             if (sum >= MAX_SIZE) {
                 sum -= MAX_SIZE;
                 carry = 1;
-            } else {
+            }
+            else {
                 carry = 0;
             }
 
@@ -537,102 +501,85 @@ namespace BigInt {
         }
 
         std::reverse(result.begin(), result.end());
-        bigint result_bigint {std::move(result)};
+        bigint result_bigint{std::move(result)};
         return negate_answer ? negate(result_bigint) : result_bigint;
     }
 
-    inline std::pair<int, long long> subtract_with_borrow(const long long lhs, const long long rhs)
-    {
-        if (lhs < rhs)
-        {
-            // Borrow needs to happen
-            auto result = (lhs + bigint::MAX_SIZE) - rhs;
-            return {1, result}; // 1 represents a borrow
-        }
-
-        auto result = lhs - rhs;
-        return {0, result}; // 0 means no borrow
-    }
-
-    inline bigint bigint::subtract(const bigint &lhs, const bigint &rhs)
-    {
+    inline bigint bigint::subtract(const bigint& lhs, const bigint& rhs) {
         // Ensure LHS is larger than RHS, and both are positive
-        if (rhs == 0) return lhs;
-        if (lhs == rhs) return 0;
-
-        if (is_negative(lhs) && is_negative(rhs))
-        {
+        // (-A) - (-B) == B - A
+        if (is_negative(lhs) && is_negative(rhs)) {
             return subtract(abs(rhs), abs(lhs));
         }
-        if (is_negative(rhs))
-        {
+        // (A) - (-B) == A + B
+        if (is_negative(rhs)) {
             return add(lhs, abs(rhs));
         }
-        if (is_negative(lhs))
-        {
-            return add(lhs, negate(rhs));
+        // (-A) - (B) == -(A + B)
+        if (is_negative(lhs)) {
+            return negate(add(abs(lhs), rhs));
         }
-        if (lhs < rhs)
-        {
+        if (lhs < rhs) {
             return negate(subtract(rhs, lhs));
         }
 
-        bigint full_rhs =  rhs;
-        std::vector<std::pair<int, long long>> borrow_result(lhs.vec.size());
-        // Fill the smaller to match the larger size
-        while (lhs.vec.size() > full_rhs.vec.size())
-        {
-            full_rhs.vec.insert(full_rhs.vec.begin(), 0);
+        std::vector<long long> result;
+        result.reserve(lhs.vec.size());
+        long long borrow = 0;
+
+        auto it_l = lhs.vec.rbegin();
+        auto it_r = rhs.vec.rbegin();
+
+        while (it_l != lhs.vec.rend()) {
+            const long long l_val = *it_l;
+            const long long r_val = (it_r != rhs.vec.rend()) ? *it_r : 0;
+
+            long long diff = l_val - r_val - borrow;
+            if (diff < 0) {
+                diff += MAX_SIZE;
+                borrow = 1;
+            }
+            else {
+                borrow = 0;
+            }
+            result.push_back(diff);
+
+            ++it_l;
+            if (it_r != rhs.vec.rend()) ++it_r;
         }
-
-        std::transform(lhs.vec.rbegin(), lhs.vec.rend(), full_rhs.vec.rbegin(), borrow_result.rbegin(),
-                       subtract_with_borrow);
-
-        std::vector<long long> final(lhs.vec.size());
-        for (int i = borrow_result.size() - 1; i >= 0; --i) {
-            final[i] += borrow_result[i].second;
-            if (borrow_result[i].first)
-                final[i - 1] -= borrow_result[i].first;
-        }
-
-        return trim(final);
+        std::reverse(result.begin(), result.end());
+        return trim(bigint(std::move(result)));
     }
 
-    inline bigint bigint::multiply(const bigint &lhs, const bigint &rhs)
-    {
+    inline bigint bigint::multiply(const bigint& lhs, const bigint& rhs) {
         if (lhs == 0 || rhs == 0) return 0;
         if (lhs == 1) return rhs;
         if (rhs == 1) return lhs;
 
-        if (is_negative(lhs) && is_negative(rhs))
-        {
+        if (is_negative(lhs) && is_negative(rhs)) {
             return (abs(lhs) * abs(rhs));
         }
-        if (is_negative(lhs) || is_negative(rhs))
-        {
+        if (is_negative(lhs) || is_negative(rhs)) {
             return negate(abs(lhs) * abs(rhs));
         }
-        if (lhs < rhs)
-        {
+        if (lhs < rhs) {
             return multiply(rhs, lhs);
         }
 
         std::vector<long long> result(lhs.vec.size() + rhs.vec.size(), 0);
 
-        for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs)
-        {
-            for (auto it_rhs = rhs.vec.rbegin(); it_rhs != rhs.vec.rend(); ++it_rhs)
-            {
+        for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs) {
+            for (auto it_rhs = rhs.vec.rbegin(); it_rhs != rhs.vec.rend(); ++it_rhs) {
                 // Calculate the product and the corresponding indices in the result vector
                 // use 128 bits to carefully store overflow
                 __int128 mul = static_cast<__int128>(*it_lhs) * static_cast<__int128>(*it_rhs);
-                auto pos_low_it = result.rbegin() + (std::distance(lhs.vec.rbegin(), it_lhs) + std::distance(rhs.vec.rbegin(), it_rhs));
+                auto pos_low_it = result.rbegin() + (std::distance(lhs.vec.rbegin(), it_lhs) + std::distance(
+                                                         rhs.vec.rbegin(), it_rhs));
                 auto pos_high_it = pos_low_it + 1;
 
                 // Add the product to the result vector
                 *pos_low_it += mul % MAX_SIZE;
-                if (pos_high_it != result.rend())
-                {
+                if (pos_high_it != result.rend()) {
                     *pos_high_it += mul / MAX_SIZE;
                 }
 
@@ -648,8 +595,7 @@ namespace BigInt {
 
         // Handle carries for remaining positions
         for (auto r_iter = result.rbegin(); r_iter != result.rend() - 1; ++r_iter) {
-            if (*r_iter >= MAX_SIZE)
-            {
+            if (*r_iter >= MAX_SIZE) {
                 *(r_iter + 1) += *r_iter / MAX_SIZE;
                 *r_iter %= MAX_SIZE;
             }
@@ -659,30 +605,24 @@ namespace BigInt {
     }
 
 
-    inline bigint bigint::divide(const bigint &numerator, const bigint &denominator)
-    {
-        if (denominator == 0)
-        {
+    inline bigint bigint::divide(const bigint& numerator, const bigint& denominator) {
+        if (denominator == 0) {
             throw std::domain_error("Attempted to divide by zero.");
         }
         if (numerator == denominator) return 1;
         if (denominator == 1) return numerator;
         if (numerator == 0) return 0;
 
-        if (is_negative(numerator) && is_negative(denominator))
-        {
+        if (is_negative(numerator) && is_negative(denominator)) {
             return divide(abs(numerator), abs(denominator));
         }
-        if (is_negative(numerator) || is_negative(denominator))
-        {
+        if (is_negative(numerator) || is_negative(denominator)) {
             return negate(divide(abs(numerator), abs(denominator)));
         }
-        if (numerator < denominator)
-        {
+        if (numerator < denominator) {
             return 0;
         }
-        if (numerator.vec.size() <= 1)
-        {
+        if (numerator.vec.size() <= 1) {
             return numerator.vec.back() / denominator.vec.back();
         }
 
@@ -695,21 +635,18 @@ namespace BigInt {
 
         auto temp = denominator * numerator_size;
 
-        while (denominator * numerator_size < remainder)
-        {
+        while (denominator * numerator_size < remainder) {
             temp = denominator * numerator_size;
             remainder -= temp;
             quotient += numerator_size;
             count = count_digits(remainder) - count_digits(denominator) - 1;
 
 
-            if (numerator_size <= 1)
-            {
+            if (numerator_size <= 1) {
                 quotient += remainder / denominator;
                 break;
             }
-            if (remainder.vec.size() <= 1)
-            {
+            if (remainder.vec.size() <= 1) {
                 quotient += remainder.vec.back() / denominator.vec.back();
                 break;
             }
@@ -719,8 +656,7 @@ namespace BigInt {
         return quotient;
     }
 
-    inline bigint bigint::sqrt(const bigint &input)
-    {
+    inline bigint bigint::sqrt(const bigint& input) {
         if (is_negative(input))
             throw std::domain_error("Square root of a negative number is complex");
 
@@ -741,7 +677,8 @@ namespace BigInt {
             if (square < input) {
                 low_end = mid_point + 1;
                 answer = mid_point;
-            } else {
+            }
+            else {
                 high_end = mid_point - 1;
             }
         }
@@ -749,8 +686,7 @@ namespace BigInt {
     }
 
 
-    inline bigint bigint::log2(const bigint &input)
-    {
+    inline bigint bigint::log2(const bigint& input) {
         if (is_negative(input) || input == 0)
             throw std::domain_error("Invalid input for natural log");
 
@@ -768,16 +704,15 @@ namespace BigInt {
 
         return exponent;
         // TODO: Convert to using division after checking bigO of division vs multiplication
-//    std::string logVal = "-1";
-//    while(s != "0") {
-//        logVal = add(logVal, "1");
-//        s = divide(s, "2");
-//    }
-//    return logVal;
+        //    std::string logVal = "-1";
+        //    while(s != "0") {
+        //        logVal = add(logVal, "1");
+        //        s = divide(s, "2");
+        //    }
+        //    return logVal;
     }
 
-    inline bigint bigint::log10(const bigint &input)
-    {
+    inline bigint bigint::log10(const bigint& input) {
         if (is_negative(input) || input == 0)
             throw std::domain_error("Invalid input for log base 10");
 
@@ -795,33 +730,28 @@ namespace BigInt {
         return count - 1;
     }
 
-    inline bigint bigint::logwithbase(const bigint &input, const bigint &base)
-    {
+    inline bigint bigint::logwithbase(const bigint& input, const bigint& base) {
         auto top = log2(input);
         auto bottom = log2(base);
         auto answer = divide(top, bottom);
         return answer;
     }
 
-    inline bigint bigint::antilog2(const bigint &input)
-    {
+    inline bigint bigint::antilog2(const bigint& input) {
         return pow(2, input);
     }
 
-    inline bigint bigint::antilog10(const bigint &input)
-    {
+    inline bigint bigint::antilog10(const bigint& input) {
         return pow(10, input);
     }
 
-    inline void bigint::swap(bigint &lhs, bigint &rhs)
-    {
+    inline void bigint::swap(bigint& lhs, bigint& rhs) {
         const bigint temp = lhs;
         lhs = rhs;
         rhs = temp;
     }
 
-    inline bigint bigint::gcd(const bigint &lhs, const bigint &rhs)
-    {
+    inline bigint bigint::gcd(const bigint& lhs, const bigint& rhs) {
         bigint temp_l = lhs, temp_r = rhs, remainder;
         if (rhs > lhs)
             swap(temp_l, temp_r);
@@ -834,8 +764,7 @@ namespace BigInt {
         return temp_l;
     }
 
-    inline bigint bigint::factorial(const bigint &input)
-    {
+    inline bigint bigint::factorial(const bigint& input) {
         if (is_negative(input)) {
             throw std::runtime_error("Factorial of Negative Integer is not defined.");
         }
@@ -851,8 +780,9 @@ namespace BigInt {
         return ans;
     }
 
-    inline bool bigint::is_prime(const bigint &s)
-    {
+    /* Simplest form of prime checking, implement your own
+     */
+    inline bool bigint::is_prime(const bigint& s) {
         if (is_negative(s) || s == 1)
             return false;
 
@@ -862,9 +792,7 @@ namespace BigInt {
         if (is_even(s) || s % 5 == 0)
             return false;
 
-
-        bigint i;
-        for (i = 3; i * i <= s; i += 2) {
+        for (bigint i = 3; i * i <= s; i += 2) {
             if ((s % i) == 0) {
                 return false;
             }
@@ -904,13 +832,11 @@ namespace BigInt {
         constexpr int chunk_size = 18;
         const int size = input.size();
 
-        if (size > chunk_size)
-        {
+        if (size > chunk_size) {
             // Pad the length to get appropriate sized chunks
             input.insert(0, chunk_size - (size % chunk_size), '0');
         }
-        for (int i = 0; i < input.size(); i+=chunk_size)
-        {
+        for (int i = 0; i < input.size(); i += chunk_size) {
             std::string temp_str = input.substr(i, chunk_size);
             result.emplace_back(stoll(temp_str));
         }
@@ -923,32 +849,35 @@ namespace BigInt {
         bool first = true;
         for (auto partial : input) {
             if (first) {
-                ss << partial;  // No padding for the first number
+                ss << partial; // No padding for the first number
                 first = false;
-            } else {
-                ss << std::setw(18) << std::setfill('0') << partial;  // Pad to 18 digits
+            }
+            else {
+                ss << std::setw(18) << std::setfill('0') << partial; // Pad to 18 digits
             }
         }
         return ss.str();
     }
 
-    inline int bigint::count_digits(const bigint & input) {
+    inline int bigint::count_digits(const bigint& input) {
         std::string my_string = vector_to_string(input.vec);
         return static_cast<int>(my_string.length()) - 1;
     }
-
 } // namespace::BigInt
 
 template<>
-struct std::hash<BigInt::bigint> {
-    std::size_t operator()(const BigInt::bigint& input) const
-    {
+struct std::hash<BigInt::bigint>
+{
+    std::size_t operator()(const BigInt::bigint& input) const {
         std::size_t seed = input.vec.size();
-        for(auto x : input.vec) {
+        for (auto x : input.vec) {
             x = ((x >> 16) ^ x) * 0x45d9f3b;
             x = ((x >> 16) ^ x) * 0x45d9f3b;
             x = (x >> 16) ^ x;
             seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        if (input.is_neg) {
+            seed ^= 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
         return seed;
     }
