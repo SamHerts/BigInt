@@ -118,7 +118,11 @@ namespace BigInt {
 
         bigint(const char* n) : bigint(std::string(n)) {}
 
-        bigint(std::vector<long long> n) { this->vec = std::move(n); }
+        /* If initializing from a vector that should be negative, the negative value must be set afterward.
+         * bigint alpha(std::vector(...));
+         * -alpha;
+         */
+        bigint(std::vector<long long> n) : vec(std::move(n)) {}
 
         bigint& operator=(const bigint& other) {
             if (this == &other)
@@ -364,8 +368,9 @@ namespace BigInt {
         static bigint random(size_t length);
 
     private:
-        std::vector<long long> vec{};
         bool is_neg{false};
+        std::vector<long long> vec;
+
 
         // Function Definitions for Internal Uses
 
@@ -531,8 +536,8 @@ namespace BigInt {
         auto it_r = rhs.vec.rbegin();
 
         while (it_l != lhs.vec.rend()) {
-            long long l_val = *it_l;
-            long long r_val = (it_r != rhs.vec.rend()) ? *it_r : 0;
+            const long long l_val = *it_l;
+            const long long r_val = (it_r != rhs.vec.rend()) ? *it_r : 0;
 
             long long diff = l_val - r_val - borrow;
             if (diff < 0) {
@@ -780,6 +785,8 @@ namespace BigInt {
         return ans;
     }
 
+    /* Simplest form of prime checking, implement your own
+     */
     inline bool bigint::is_prime(const bigint& s) {
         if (is_negative(s) || s == 1)
             return false;
@@ -790,9 +797,7 @@ namespace BigInt {
         if (is_even(s) || s % 5 == 0)
             return false;
 
-
-        bigint i;
-        for (i = 3; i * i <= s; i += 2) {
+        for (bigint i = 3; i * i <= s; i += 2) {
             if ((s % i) == 0) {
                 return false;
             }
@@ -875,6 +880,9 @@ struct std::hash<BigInt::bigint>
             x = ((x >> 16) ^ x) * 0x45d9f3b;
             x = (x >> 16) ^ x;
             seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        if (input.is_neg) {
+            seed ^= 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
         return seed;
     }
