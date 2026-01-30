@@ -8,6 +8,7 @@
 #include <chrono>
 #include <string_view>
 #include <sstream>
+#include <unordered_set>
 
 #include "../bigint.h"
 
@@ -152,6 +153,45 @@ TEST(Test_BigInt, Creation_Tests) {
     EXPECT_EQ(bigint(my_string), "100");
     EXPECT_EQ(bigint(my_string3), "-9223372036854775808");
     EXPECT_EQ(bigint(my_string4), "-9223372036854775809");
+}
+
+TEST(Test_BigInt, Unary_Tests) {
+    bigint A{std::string(kHugeA)};
+    bigint B{std::string(kHugeA)};
+
+    A++;
+    EXPECT_EQ(A, B + 1);
+    A--;
+    EXPECT_EQ(A, B);
+    EXPECT_EQ(++A, B + 1);
+    EXPECT_EQ(--A, B);
+}
+
+TEST(Test_BigInt, Hash_Tests) {
+    const std::hash<bigint> hasher;
+    bigint A{std::string(kHugeA)};
+    bigint B{std::string(kHugeB)};
+
+    EXPECT_EQ(hasher(bigint(0)), hasher(bigint(0)));
+    EXPECT_EQ(hasher(bigint(1)), hasher(bigint(1)));
+    EXPECT_EQ(hasher(bigint(-1)), hasher(bigint(-1)));
+    EXPECT_EQ(hasher(A), hasher(A));
+
+    EXPECT_NE(hasher(bigint(0)), hasher(bigint(1)));
+    EXPECT_NE(hasher(bigint(-1)), hasher(bigint(1)));
+    EXPECT_NE(hasher(A), hasher(A + 1));
+
+    std::unordered_set<bigint> set;
+
+    set.insert(A);
+    set.insert(B);
+    EXPECT_EQ(set.size(), 2);
+    EXPECT_EQ(set.count(A), 1);
+    EXPECT_EQ(set.count(B), 1);
+
+    EXPECT_EQ(set.find(A), set.find(A));
+    set.insert(A);
+    EXPECT_EQ(set.count(A), 1);
 }
 
 TEST(Test_BigInt, Stream_Tests) {
