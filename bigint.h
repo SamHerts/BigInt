@@ -47,10 +47,7 @@ namespace BigInt {
         //                   LLONG_MAX = 9'223'372'036'854'775'807
         static constexpr auto MAX_SIZE = 1'000'000'000'000'000'000LL;
 
-        bigint() {
-            is_neg = false;
-            vec.emplace_back(0);
-        }
+        bigint() : vec({0}) {}
 
         bigint(const std::string& s) {
             if (!is_bigint(s)) { throw std::runtime_error("Invalid Big Integer."); }
@@ -61,13 +58,13 @@ namespace BigInt {
                 is_neg = true;
             }
             else {
+                is_neg = false;
                 vec = string_to_vector(s);
             }
         }
 
         bigint(const char c) {
-            int temp = static_cast<unsigned char>(c);
-            if (isdigit(temp)) {
+            if (const int temp = static_cast<unsigned char>(c); isdigit(temp)) {
                 *this = bigint(char_to_int(c));
             }
             else {
@@ -83,14 +80,12 @@ namespace BigInt {
 
         bigint(const double n) : bigint(static_cast<long long>(n)) {}
 
-        bigint(const long long n) {
+        bigint(const long long n): is_neg(n < 0) {
             if (n == 0) {
                 is_neg = false;
                 vec.push_back(0);
                 return;
             }
-            is_neg = (n < 0);
-
             unsigned long long val = n;
             if (is_neg) {
                 val = 0ULL - val;
@@ -114,7 +109,7 @@ namespace BigInt {
             }
         }
 
-        bigint(const bigint& n) { *this = n; }
+        bigint(const bigint& n) = default;
 
         bigint(const char* n) : bigint(std::string(n)) {}
 
@@ -522,7 +517,7 @@ namespace BigInt {
         }
         // (-A) - (B) == -(A + B)
         if (is_negative(lhs)) {
-            return add(lhs, negate(rhs));
+            return negate(add(abs(lhs), rhs));
         }
         if (lhs < rhs) {
             return negate(subtract(rhs, lhs));
