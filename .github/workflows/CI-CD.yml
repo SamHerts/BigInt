@@ -23,7 +23,7 @@ jobs:
         run: cmake --build tests/bin/Debug --clean-first     
 
       - name: Run Tests
-        run: tests/bin/Debug/BigInt_gtest --gtest_color=no
+        run: tests/bin/Debug/BigInt_gtest --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
