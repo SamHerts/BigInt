@@ -57,6 +57,11 @@ namespace BigInt {
                     throw std::runtime_error("Invalid Big Integer.");
                 is_neg = true;
             }
+            else if (s[0] == '0' && s[1] == 'x') {
+                // Hex string
+                is_neg = false;
+                vec = hex_to_vector(s);
+            }
             else {
                 is_neg = false;
                 vec = string_to_vector(s);
@@ -381,6 +386,7 @@ namespace BigInt {
         }
 
         static std::vector<long long> string_to_vector(std::string input);
+        static std::vector<long long> hex_to_vector(std::string input);
 
         static std::string vector_to_string(const std::vector<long long>& input);
 
@@ -450,7 +456,16 @@ namespace BigInt {
 
 
     inline bool bigint::is_bigint(const std::string& s) {
-        if (s.empty() || (s.length() > 1 && s[0] == '0'))
+        if (s.empty())
+            return false;
+
+        // Check for hex string "0x..."
+        if (s.length() > 2 && s[0] == '0' && s[1] == 'x') {
+            return s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
+        }
+
+        // Reject leading zeros for decimal numbers
+        if (s.length() > 1 && s[0] == '0')
             return false;
 
         if (s[0] == '-') {
@@ -839,6 +854,38 @@ namespace BigInt {
         for (int i = 0; i < input.size(); i += chunk_size) {
             std::string temp_str = input.substr(i, chunk_size);
             result.emplace_back(stoll(temp_str));
+        }
+
+        return result;
+    }
+
+    inline std::vector<long long> bigint::hex_to_vector(std::string input) {
+        // Strip "0x" prefix
+        const std::string hex = input.substr(2);
+
+        std::vector<long long> result = {0};
+
+        for (const char c : hex) {
+            unsigned long long digit;
+            if (c >= '0' && c <= '9')      digit = c - '0';
+            else if (c >= 'a' && c <= 'f') digit = c - 'a' + 10;
+            else if (c >= 'A' && c <= 'F') digit = c - 'A' + 10;
+            else throw std::runtime_error("Invalid hex character.");
+
+            // Multiply current value by 16 and add digit.
+            // Max intermediate value: (MAX_SIZE-1)*16+15 = 15,999,999,999,999,999,999
+            // which fits in unsigned long long (max ~18.4 * 10^18).
+            unsigned long long carry = digit;
+            for (int i = static_cast<int>(result.size()) - 1; i >= 0; --i) {
+                const unsigned long long val = static_cast<unsigned long long>(result[i]) * 16 + carry;
+                result[i] = static_cast<long long>(val % static_cast<unsigned long long>(MAX_SIZE));
+                carry = val / static_cast<unsigned long long>(MAX_SIZE);
+            }
+            // carry <= 15 < MAX_SIZE, so this loop runs at most once
+            while (carry > 0) {
+                result.insert(result.begin(), static_cast<long long>(carry % static_cast<unsigned long long>(MAX_SIZE)));
+                carry /= static_cast<unsigned long long>(MAX_SIZE);
+            }
         }
 
         return result;
