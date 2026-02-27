@@ -121,6 +121,7 @@ TEST(Test_BigInt, Invalid_Tests) {
 
 TEST(Test_BigInt, Creation_Tests) {
     int my_int = 100;
+    unsigned int hex_int = 0xDEADBEEF;
     long my_long = 100;
     long long my_longlong = 100;
     long long my_longlong2 = LLONG_MAX;
@@ -131,9 +132,12 @@ TEST(Test_BigInt, Creation_Tests) {
     std::string my_string = "100";
     std::string my_string3 = "-9223372036854775808";
     std::string my_string4 = "-9223372036854775809";
+    std::string hex_string = "0xDEADBEEF0FF1CEF0CACC1A";
 
     EXPECT_EQ(bigint(my_int), 100);
     EXPECT_EQ(bigint(-my_int), -100);
+
+    EXPECT_EQ(bigint(hex_int), 3735928559);
 
     EXPECT_EQ(bigint(my_long), 100);
     EXPECT_EQ(bigint(-my_long), -100);
@@ -153,6 +157,7 @@ TEST(Test_BigInt, Creation_Tests) {
     EXPECT_EQ(bigint(my_string), "100");
     EXPECT_EQ(bigint(my_string3), "-9223372036854775808");
     EXPECT_EQ(bigint(my_string4), "-9223372036854775809");
+    EXPECT_EQ(bigint(hex_string), "269202023463611101042363418");
 }
 
 TEST(Test_BigInt, Unary_Tests) {
