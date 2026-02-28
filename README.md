@@ -37,7 +37,7 @@ Below is a basic example demonstrating the usage of the library.
 
 ```cpp
 #include <iostream>
-#include "bigint.hpp"
+#include "bigint.h"
 
 int main() {
     bigint a("123456789012345678901234567890");
