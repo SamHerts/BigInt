@@ -28,7 +28,7 @@ Simply include the header file in your project.
 1. Download `BigInt.h`.
 2. Include it in your source file:
     ```cpp
-    #include "BigInt.hpp"
+    #include "BigInt.h"
     ```
 
 ### Usage
