@@ -1,6 +1,6 @@
 # BigInt
 
-![example workflow](https://github.com/SamHerts/BigInt/actions/workflows/CI-CD.yml/badge.svg)  ![c++]( https://img.shields.io/badge/-c++11-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++20-blue?logo=c%2B%2B)
+![example workflow](https://github.com/SamHerts/BigInt/actions/workflows/CI-CD.yml/badge.svg)  ![c++]( https://img.shields.io/badge/-c++11-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++14-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++17-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++20-blue?logo=c%2B%2B) ![c++]( https://img.shields.io/badge/-c++23-blue?logo=c%2B%2B)
 
 ## Overview
 
@@ -21,7 +21,7 @@
 
 ### Prerequisites
 
-A C++11 (or higher) compatible compiler (e.g., GCC 4.8+, Clang 3.3+, MSVC 2015+).
+A C++11 (or higher) compatible compiler. The library is explicitly tested against **GCC, Clang, and MSVC** using **C++11, 14, 17, 20, and 23**.
 
 ### Installation
 
