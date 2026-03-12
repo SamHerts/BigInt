@@ -459,6 +459,14 @@ namespace BigInt {
         if (s.empty())
             return false;
 
+        // Check for leading negative sign
+        if (s[0] == '-') {
+            if (s.length() == 1) return false;
+            // Recursively validate the rest as a positive bigint
+            // Note: leading zeros check still applies to the magnitude
+            return is_bigint(s.substr(1));
+        }
+
         // Check for hex string "0x..."
         if (s.length() > 2 && s[0] == '0' && s[1] == 'x') {
             return s.find_first_not_of("0123456789abcdefABCDEF", 2) == std::string::npos;
@@ -468,9 +476,6 @@ namespace BigInt {
         if (s.length() > 1 && s[0] == '0')
             return false;
 
-        if (s[0] == '-') {
-            return s.find_first_not_of("0123456789", 1) == std::string::npos;
-        }
         return s.find_first_not_of("0123456789", 0) == std::string::npos;
     }
 
