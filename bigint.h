@@ -45,7 +45,7 @@ namespace BigInt {
     {
     public:
         //                   LLONG_MAX = 9'223'372'036'854'775'807
-        static constexpr auto MAX_SIZE = 1'000'000'000'000'000'000LL;
+        static constexpr auto MAX_SIZE = 1'000'000'000LL;
 
         bigint() : vec({0}) {}
 
@@ -591,8 +591,7 @@ namespace BigInt {
         for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs) {
             for (auto it_rhs = rhs.vec.rbegin(); it_rhs != rhs.vec.rend(); ++it_rhs) {
                 // Calculate the product and the corresponding indices in the result vector
-                // use 128 bits to carefully store overflow
-                __int128 mul = static_cast<__int128>(*it_lhs) * static_cast<__int128>(*it_rhs);
+                long long mul = (*it_lhs) * (*it_rhs);
                 auto pos_low_it = result.rbegin() + (std::distance(lhs.vec.rbegin(), it_lhs) + std::distance(
                                                          rhs.vec.rbegin(), it_rhs));
                 auto pos_high_it = pos_low_it + 1;
@@ -847,14 +846,16 @@ namespace BigInt {
     }
 
     inline std::vector<long long> bigint::string_to_vector(std::string input) {
-        // Break into chunks of 18 characters
+        // Break into chunks of 9 characters
         std::vector<long long> result;
-        constexpr int chunk_size = 18;
+        constexpr int chunk_size = 9;
         const int size = input.size();
 
         if (size > chunk_size) {
             // Pad the length to get appropriate sized chunks
-            input.insert(0, chunk_size - (size % chunk_size), '0');
+            if (int mod = size % chunk_size; mod != 0) {
+                input.insert(0, chunk_size - mod, '0');
+            }
         }
         for (int i = 0; i < input.size(); i += chunk_size) {
             std::string temp_str = input.substr(i, chunk_size);
@@ -878,8 +879,8 @@ namespace BigInt {
             else throw std::runtime_error("Invalid hex character.");
 
             // Multiply current value by 16 and add digit.
-            // Max intermediate value: (MAX_SIZE-1)*16+15 = 15,999,999,999,999,999,999
-            // which fits in unsigned long long (max ~18.4 * 10^18).
+            // Max intermediate value: (MAX_SIZE-1)*16+15 = 15,999,999,999
+            // which fits in unsigned long long.
             unsigned long long carry = digit;
             for (int i = static_cast<int>(result.size()) - 1; i >= 0; --i) {
                 const unsigned long long val = static_cast<unsigned long long>(result[i]) * 16 + carry;
@@ -905,7 +906,7 @@ namespace BigInt {
                 first = false;
             }
             else {
-                ss << std::setw(18) << std::setfill('0') << partial; // Pad to 18 digits
+                ss << std::setw(9) << std::setfill('0') << partial; // Pad to 9 digits
             }
         }
         return ss.str();
