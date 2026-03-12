@@ -49,6 +49,7 @@ jobs:
           echo "CC=clang-17" >> $GITHUB_ENV
 
       - name: Configure CMake
+        shell: bash
         run: |
           cmake -S tests/ -B build \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -56,6 +57,7 @@ jobs:
           -DCMAKE_CXX_STANDARD_REQUIRED=ON
 
       - name: Build
+        shell: bash
         run: cmake --build build --config Debug
 
       - name: Run Tests
