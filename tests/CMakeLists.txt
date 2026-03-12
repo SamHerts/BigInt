@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 project(BigInt_gtest)
 
-set(CMAKE_CXX_STANDARD 11)
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 11)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # GTest download
 enable_testing()
