@@ -581,40 +581,30 @@ namespace BigInt {
             return multiply(rhs, lhs);
         }
 
-        std::vector<long long> result(lhs.vec.size() + rhs.vec.size(), 0);
+        const size_t l_size = lhs.vec.size();
+        const size_t r_size = rhs.vec.size();
+        const size_t f_size = l_size + r_size;
 
-        for (auto it_lhs = lhs.vec.rbegin(); it_lhs != lhs.vec.rend(); ++it_lhs) {
-            for (auto it_rhs = rhs.vec.rbegin(); it_rhs != rhs.vec.rend(); ++it_rhs) {
-                // Calculate the product and the corresponding indices in the result vector
-                long long mul = (*it_lhs) * (*it_rhs);
-                auto pos_low_it = result.rbegin() + (std::distance(lhs.vec.rbegin(), it_lhs) + std::distance(
-                                                         rhs.vec.rbegin(), it_rhs));
-                auto pos_high_it = pos_low_it + 1;
+        std::vector<long long> result(f_size, 0);
 
-                // Add the product to the result vector
-                *pos_low_it += mul % MAX_SIZE;
-                if (pos_high_it != result.rend()) {
-                    *pos_high_it += mul / MAX_SIZE;
-                }
+        for (size_t i = 0; i < l_size; i++) {
+            long long lhs_val = lhs.vec[l_size - 1 - i];
+            if (lhs_val == 0) continue;
 
-                // Handle carry
-                if (*pos_low_it >= MAX_SIZE) {
-                    if (pos_high_it != result.rend()) {
-                        *pos_high_it += *pos_low_it / MAX_SIZE;
-                    }
-                    *pos_low_it %= MAX_SIZE;
-                }
+            long long carry = 0;
+            for (size_t j = 0; j < r_size; j++) {
+                size_t result_idx = f_size - 1 - (i + j);
+                const unsigned long long cur = static_cast<unsigned long long>(result[result_idx]) +
+                    static_cast<unsigned long long>(lhs_val) * rhs.vec[r_size - 1 - j] + static_cast<unsigned long long>(carry);
+
+                result[result_idx] = static_cast<long long>(cur % MAX_SIZE);
+                carry = static_cast<long long>(cur / MAX_SIZE);
+            }
+            // Final carry for this pass of the inner loop
+            if (carry) {
+                result[f_size - 1 - (i + r_size)] += carry;
             }
         }
-
-        // Handle carries for remaining positions
-        for (auto r_iter = result.rbegin(); r_iter != result.rend() - 1; ++r_iter) {
-            if (*r_iter >= MAX_SIZE) {
-                *(r_iter + 1) += *r_iter / MAX_SIZE;
-                *r_iter %= MAX_SIZE;
-            }
-        }
-
         return trim(result);
     }
 
