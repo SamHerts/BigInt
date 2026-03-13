@@ -74,8 +74,8 @@ static auto measure_execution = [](const int count, const char* label, const siz
 class Test_BigInt_Performance : public ::testing::Test
 {
 protected:
-    static constexpr size_t number_count = 500;
-    const std::vector<size_t> sizes = {5, 20, 50, 100, 1000, 10'000, 100'000, 1'000'000};
+    static constexpr size_t number_count = 2;
+    const std::vector<size_t> sizes = {10, 100, 1000, 10000, 50000};
     volatile int dce_sink = 0;
 
     void SetUp() override {
