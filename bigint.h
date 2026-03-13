@@ -261,32 +261,17 @@ namespace BigInt {
             return *this;
         }
 
-        friend bool operator==(const bigint& l, const bigint& r) {
-            if (l.is_neg != r.is_neg) {
-                return false;
-            }
-            return l.vec == r.vec;
-        }
+        friend bool operator==(const bigint& l, const bigint& r);
 
-        friend bool operator!=(const bigint& l, const bigint& r) {
-            return !(l == r);
-        }
+        friend bool operator!=(const bigint& l, const bigint& r);
 
-        friend bool operator<(const bigint& lhs, const bigint& rhs) {
-            return less_than(lhs, rhs);
-        }
+        friend bool operator<(const bigint& lhs, const bigint& rhs);
 
-        friend bool operator>(const bigint& l, const bigint& r) {
-            return r < l;
-        }
+        friend bool operator>(const bigint& l, const bigint& r);
 
-        friend bool operator<=(const bigint& l, const bigint& r) {
-            return r >= l;
-        }
+        friend bool operator<=(const bigint& l, const bigint& r);
 
-        friend bool operator>=(const bigint& l, const bigint& r) {
-            return !(l < r);
-        }
+        friend bool operator>=(const bigint& l, const bigint& r);
 
         explicit operator bool() const {
             return !(vec.size() == 1 && vec.front() == 0);
@@ -462,6 +447,33 @@ namespace BigInt {
             return lhs.vec.size() < rhs.vec.size();
         }
     };
+
+    inline bool operator==(const bigint& l, const bigint& r) {
+        if (l.is_neg != r.is_neg) {
+            return false;
+        }
+        return l.vec == r.vec;
+    }
+
+    inline bool operator!=(const bigint& l, const bigint& r) {
+        return !(l == r);
+    }
+
+    inline bool operator<(const bigint& lhs, const bigint& rhs) {
+        return bigint::less_than(lhs, rhs);
+    }
+
+    inline bool operator>(const bigint& l, const bigint& r) {
+        return r < l;
+    }
+
+    inline bool operator<=(const bigint& l, const bigint& r) {
+        return r >= l;
+    }
+
+    inline bool operator>=(const bigint& l, const bigint& r) {
+        return !(l < r);
+    }
 
 
     inline bool bigint::is_bigint(const std::string& s) {
