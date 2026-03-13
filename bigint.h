@@ -86,13 +86,13 @@ namespace BigInt {
             }
         }
 
-        bigint(const unsigned int n) : bigint(static_cast<long long>(n)) {}
+        bigint(const char* n) : bigint(std::string(n)) {}
 
-        bigint(const int n) : bigint(static_cast<long long>(n)) {}
-
-        bigint(const long n) : bigint(static_cast<long long>(n)) {}
-
-        bigint(const double n) : bigint(static_cast<long long>(n)) {}
+        bigint(const int n) :           bigint(static_cast<long long>(n)) {}
+        bigint(const unsigned int n) :  bigint(static_cast<long long>(n)) {}
+        bigint(const long n) :          bigint(static_cast<long long>(n)) {}
+        bigint(const unsigned long n) : bigint(static_cast<long long>(n)) {}
+        bigint(const double n) :        bigint(static_cast<long long>(n)) {}
 
         bigint(const long long n): is_neg(n < 0) {
             if (n == 0) {
@@ -124,8 +124,6 @@ namespace BigInt {
         }
 
         bigint(const bigint& n) = default;
-
-        bigint(const char* n) : bigint(std::string(n)) {}
 
         /* If initializing from a vector that should be negative, the negative value must be set afterward.
          * bigint alpha(std::vector(...));
