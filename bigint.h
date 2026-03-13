@@ -41,15 +41,6 @@
 #include <iomanip>
 
 namespace BigInt {
-    class bigint;
-
-    bool operator==(const bigint& l, const bigint& r);
-    bool operator!=(const bigint& l, const bigint& r);
-    bool operator<(const bigint& lhs, const bigint& rhs);
-    bool operator>(const bigint& l, const bigint& r);
-    bool operator<=(const bigint& l, const bigint& r);
-    bool operator>=(const bigint& l, const bigint& r);
-
     class bigint
     {
     public:
@@ -259,17 +250,32 @@ namespace BigInt {
             return *this;
         }
 
-        friend bool operator==(const bigint& l, const bigint& r);
+        friend bool operator==(const bigint& l, const bigint& r) {
+            if (l.is_neg != r.is_neg) {
+                return false;
+            }
+            return l.vec == r.vec;
+        }
 
-        friend bool operator!=(const bigint& l, const bigint& r);
+        friend bool operator!=(const bigint& l, const bigint& r) {
+            return !(l == r);
+        }
 
-        friend bool operator<(const bigint& lhs, const bigint& rhs);
+        friend bool operator<(const bigint& lhs, const bigint& rhs) {
+            return less_than(lhs, rhs);
+        }
 
-        friend bool operator>(const bigint& l, const bigint& r);
+        friend bool operator>(const bigint& l, const bigint& r) {
+            return r < l;
+        }
 
-        friend bool operator<=(const bigint& l, const bigint& r);
+        friend bool operator<=(const bigint& l, const bigint& r) {
+            return r >= l;
+        }
 
-        friend bool operator>=(const bigint& l, const bigint& r);
+        friend bool operator>=(const bigint& l, const bigint& r) {
+            return !(l < r);
+        }
 
         explicit operator bool() const {
             return !(vec.size() == 1 && vec.front() == 0);
@@ -363,9 +369,7 @@ namespace BigInt {
         bool is_neg{false};
         std::vector<long long> vec;
 
-
         // Function Definitions for Internal Uses
-
         static bigint trim(bigint input) {
             while (input.vec.size() > 1 && input.vec.front() == 0) {
                 input.vec.erase(input.vec.begin());
@@ -445,34 +449,6 @@ namespace BigInt {
             return lhs.vec.size() < rhs.vec.size();
         }
     };
-
-    inline bool operator==(const bigint& l, const bigint& r) {
-        if (l.is_neg != r.is_neg) {
-            return false;
-        }
-        return l.vec == r.vec;
-    }
-
-    inline bool operator!=(const bigint& l, const bigint& r) {
-        return !(l == r);
-    }
-
-    inline bool operator<(const bigint& lhs, const bigint& rhs) {
-        return bigint::less_than(lhs, rhs);
-    }
-
-    inline bool operator>(const bigint& l, const bigint& r) {
-        return r < l;
-    }
-
-    inline bool operator<=(const bigint& l, const bigint& r) {
-        return r >= l;
-    }
-
-    inline bool operator>=(const bigint& l, const bigint& r) {
-        return !(l < r);
-    }
-
 
     inline bool bigint::is_bigint(const std::string& s) {
         if (s.empty())
@@ -939,7 +915,7 @@ namespace BigInt {
 template<>
 struct std::hash<BigInt::bigint>
 {
-    std::size_t operator()(const BigInt::bigint& input) const {
+    std::size_t operator()(const BigInt::bigint& input) const noexcept {
         std::size_t seed = input.vec.size();
         for (auto x : input.vec) {
             x = ((x >> 16) ^ x) * 0x45d9f3b;
