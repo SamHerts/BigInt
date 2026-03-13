@@ -45,7 +45,7 @@ namespace BigInt {
     {
     public:
         //                   LLONG_MAX = 9'223'372'036'854'775'807
-        static constexpr auto MAX_SIZE = 1'000'000'000LL;
+        static constexpr auto MAX_SIZE = 1000000000LL;
 
         bigint() : vec({0}) {}
 
