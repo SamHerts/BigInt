@@ -41,6 +41,15 @@
 #include <iomanip>
 
 namespace BigInt {
+    class bigint;
+
+    bool operator==(const bigint& l, const bigint& r);
+    bool operator!=(const bigint& l, const bigint& r);
+    bool operator<(const bigint& lhs, const bigint& rhs);
+    bool operator>(const bigint& l, const bigint& r);
+    bool operator<=(const bigint& l, const bigint& r);
+    bool operator>=(const bigint& l, const bigint& r);
+
     class bigint
     {
     public:
@@ -703,7 +712,6 @@ namespace BigInt {
         }
         return answer;
     }
-
 
     inline bigint bigint::log2(const bigint& input) {
         if (is_negative(input) || input == 0)
