@@ -40,13 +40,13 @@ jobs:
           echo "CXX=g++-13" >> $GITHUB_ENV
           echo "CC=gcc-13" >> $GITHUB_ENV
 
-      - name: Set up Clang 17
+      - name: Set up Clang 18
         if: matrix.compiler == 'clang'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-17
-          echo "CXX=clang++-17" >> $GITHUB_ENV
-          echo "CC=clang-17" >> $GITHUB_ENV
+          sudo apt-get install -y clang-18
+          echo "CXX=clang++-18" >> $GITHUB_ENV
+          echo "CC=clang-18" >> $GITHUB_ENV
 
       - name: Configure CMake
         shell: bash
