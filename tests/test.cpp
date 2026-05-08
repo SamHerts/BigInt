@@ -428,6 +428,19 @@ TEST(Test_BigInt, Comparison_Tests) {
     EXPECT_FALSE(123456789 >= huge_number1);
 }
 
+TEST(Test_BigInt, Pow_Tests) {
+    EXPECT_EQ(bigint::pow(1, 0), 1);
+    EXPECT_EQ(bigint::pow(1, 1), 1);
+    EXPECT_EQ(bigint::pow(1, std::string{kHugeA}), 1);
+    EXPECT_EQ(bigint::pow(0, 1), 0);
+    EXPECT_EQ(bigint::pow(0, 5), 0);
+    EXPECT_EQ(bigint::pow(0, std::string{kHugeA}), 0);
+    EXPECT_EQ(bigint::pow(10, 1), 10);
+    EXPECT_EQ(bigint::pow(-10, 2), 100);
+    EXPECT_EQ(bigint::pow(10, -2), 0);
+    EXPECT_EQ(bigint::pow(std::string{kHugeA}, 1), std::string{kHugeA});
+}
+
 TEST_F(Test_BigInt_Performance, Addition_Speed_Tests) {
     std::cout << "--- Starting Performance Tests (Sample size: " << number_count << ") ---" << std::endl;
     for (const size_t number_size : sizes) {
