@@ -284,6 +284,7 @@ namespace BigInt {
         friend std::hash<bigint>;
 
         static bigint pow(const bigint& base, const bigint& exponent) {
+            if (exponent < 0) return 0;
             if (exponent == 0) return 1;
             if (exponent == 1) return base;
 
@@ -643,28 +644,22 @@ namespace BigInt {
         bigint remainder = numerator;
         bigint quotient = 0;
 
-        auto count = count_digits(remainder) - count_digits(denominator) - 1;
+        while (remainder >= denominator) {
+            int count = count_digits(remainder) - count_digits(denominator) - 1;
 
-        auto numerator_size = pow(10, count);
-
-        auto temp = denominator * numerator_size;
-
-        while (denominator * numerator_size < remainder) {
-            temp = denominator * numerator_size;
-            remainder -= temp;
-            quotient += numerator_size;
-            count = count_digits(remainder) - count_digits(denominator) - 1;
-
-
-            if (numerator_size <= 1) {
-                quotient += remainder / denominator;
-                break;
+            // Prevent negative exponents which cause pow() to return 0
+            if (count < 0) {
+                count = 0;
             }
-            if (remainder.vec.size() <= 1) {
-                quotient += remainder.vec.back() / denominator.vec.back();
-                break;
+
+            bigint numerator_size = pow(10, count);
+            bigint temp = denominator * numerator_size;
+
+            // Repeatedly subtract the chunk from the remainder
+            while (remainder >= temp) {
+                remainder -= temp;
+                quotient += numerator_size;
             }
-            numerator_size = pow(10, count);
         }
 
         return quotient;
