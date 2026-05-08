@@ -284,6 +284,8 @@ namespace BigInt {
         friend std::hash<bigint>;
 
         static bigint pow(const bigint& base, const bigint& exponent) {
+            if (base == 0) return 0;
+            if (base == 1) return 1;
             if (exponent < 0) return 0;
             if (exponent == 0) return 1;
             if (exponent == 1) return base;
