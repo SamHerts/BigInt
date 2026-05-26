@@ -289,10 +289,20 @@ namespace BigInt {
             if (exponent < 0) return 0;
             if (exponent == 0) return 1;
             if (exponent == 1) return base;
+            if (base == 10) return pow10(exponent);
 
             const bigint tmp = pow(base, exponent / 2);
             if (exponent % 2 == 0) { return tmp * tmp; }
             return base * tmp * tmp;
+        }
+
+        static bigint pow10(const bigint& exponent) {
+            if (exponent < 0) return 0;
+            if (exponent == 0) return 1;
+            if (exponent == 1) return 10;
+            std::string result(static_cast<int>(exponent) + 1, '0');
+            result[0] = '1';
+            return result;
         }
 
         static bigint maximum(const bigint& lhs, const bigint& rhs) {
