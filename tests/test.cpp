@@ -438,6 +438,9 @@ TEST(Test_BigInt, Pow_Tests) {
     EXPECT_EQ(bigint::pow(10, 1), 10);
     EXPECT_EQ(bigint::pow(-10, 2), 100);
     EXPECT_EQ(bigint::pow(10, -2), 0);
+    EXPECT_EQ(bigint::pow(10, 5), 100000);
+    EXPECT_EQ(bigint::pow(10, 50), "100000000000000000000000000000000000000000000000000");
+
     EXPECT_EQ(bigint::pow(std::string{kHugeA}, 1), std::string{kHugeA});
 }
 
