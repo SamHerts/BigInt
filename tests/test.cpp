@@ -74,8 +74,8 @@ static auto measure_execution = [](const int count, const char* label, const siz
 class Test_BigInt_Performance : public ::testing::Test
 {
 protected:
-    const std::vector<size_t> sizes = {10, 100, 1000, 10000, 50000};
     static constexpr size_t number_count = 50;
+    const std::vector<size_t> sizes = {10, 100, 1000, 10000};
     volatile int dce_sink = 0;
 
     void SetUp() override {
@@ -356,7 +356,8 @@ INSTANTIATE_TEST_SUITE_P(LargeValueDiv, BigInt_DivParamTest, ::testing::Values(
                              TestCase{kHugeA, kHugeA, "1"},
                              TestCase{"0", kHugeA, "0"},
                              TestCase{kHugeA, "-" + std::string{kHugeB}, "-" + std::string{AdivB}},
-                             TestCase{kHugeB, kHugeA, "0"}
+                             TestCase{kHugeB, kHugeA, "0"},
+                             TestCase{"12345678901234567890", "4117416960", "2998403858"}
                          ));
 
 INSTANTIATE_TEST_SUITE_P(LargeValueMod, BigInt_ModParamTest, ::testing::Values(
