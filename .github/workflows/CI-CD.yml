@@ -67,5 +67,5 @@ jobs:
           if [ "${{ runner.os }}" == "Windows" ]; then
             ./build/tests/BigInt_gtest.exe --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
           else
-            ./build/tests/BigInt_gtest --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
+            ./build/tests/BigInt_tests --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
           fi
