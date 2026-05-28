@@ -51,10 +51,11 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          cmake -S tests/ -B build \
+          cmake -B build \
           -DCMAKE_BUILD_TYPE=Debug \
           -DCMAKE_CXX_STANDARD=${{ matrix.cpp_standard }} \
-          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+          -DBIGINT_BUILD_EXAMPLES=OFF
 
       - name: Build
         shell: bash
@@ -64,7 +65,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ runner.os }}" == "Windows" ]; then
-            ./build/Debug/BigInt_gtest.exe --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
+            ./build/tests/BigInt_gtest.exe --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
           else
-            ./build/BigInt_gtest --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
+            ./build/tests/BigInt_gtest --gtest_color=no --gtest_filter=*-Test_BigInt_Performance.*
           fi
