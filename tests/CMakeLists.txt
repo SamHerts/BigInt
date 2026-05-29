@@ -1,15 +1,4 @@
-cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
-
-project(BigInt_gtest)
-
-if(NOT CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 11)
-endif()
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # GTest download
-enable_testing()
 include(FetchContent)
 FetchContent_Declare(
         googletest
@@ -20,8 +9,9 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# 'BigInt_gtest' is the target name
-# Add more tests and their dependencies here
+# Unit tests executable
 file(GLOB Test_Sources *.cpp)
-add_executable(BigInt_gtest ${Test_Sources})
-target_link_libraries(BigInt_gtest gtest_main)
+add_executable(BigInt_tests ${Test_Sources})
+target_link_libraries(BigInt_tests PRIVATE BigInt::BigInt gtest_main)
+
+add_test(NAME BigInt_Tests COMMAND BigInt_tests)
