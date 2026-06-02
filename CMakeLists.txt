@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(BigInt VERSION 1.1.0 LANGUAGES CXX)
+project(BigInt VERSION 1.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,9 +14,16 @@ target_include_directories(BigInt INTERFACE
     $<INSTALL_INTERFACE:include>
 )
 
+# Detect if BigInt is being built as the main top-level project or as a dependency
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(BIGINT_IS_TOPLEVEL ON)
+else()
+    set(BIGINT_IS_TOPLEVEL OFF)
+endif()
+
 # Options
-option(BIGINT_BUILD_EXAMPLES "Build example programs" ON)
-option(BIGINT_BUILD_TESTS "Build unit tests" ON)
+option(BIGINT_BUILD_EXAMPLES "Build example programs" ${BIGINT_IS_TOPLEVEL})
+option(BIGINT_BUILD_TESTS "Build unit tests" ${BIGINT_IS_TOPLEVEL})
 
 if(BIGINT_BUILD_EXAMPLES)
     add_subdirectory(examples)
