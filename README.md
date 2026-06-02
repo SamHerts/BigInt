@@ -25,15 +25,37 @@ A C++11 (or higher) compatible compiler. The library is explicitly tested agains
 
 ### Installation
 
-Simply include the header file in your project.
+You can integrate BigInt into your project by either directly including the header or by using CMake.
 
+#### Option 1: Direct Include
+Simply include the header file in your project.
 1. Download `bigint.h`.
 2. Include it in your source:
     ```cpp
     #include "bigint.h"
     ```
+*Note: All functionality resides within the `BigInt` namespace.*
 
-Note: All functionality resides within the `BigInt` namespace.
+#### Option 2: CMake FetchContent
+If you are using CMake (3.11+), you can automatically download and link the library using `FetchContent`. Add the following to your `CMakeLists.txt`:
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    BigInt
+    GIT_REPOSITORY [https://github.com/SamHerts/BigInt.git](https://github.com/SamHerts/BigInt.git)
+    GIT_TAG        v1.2.0 # Specify a release tag like v1.2.0
+)
+
+FetchContent_MakeAvailable(BigInt)
+
+# Create your executable
+add_executable(my_app main.cpp)
+
+# Link the BigInt interface library
+target_link_libraries(my_app PRIVATE BigInt::BigInt)
+```
 
 ## Usage
 
@@ -110,10 +132,10 @@ The project uses GoogleTest for verification.
 
 ```bash
 git clone https://github.com/SamHerts/BigInt.git
-cd BigInt/tests
+cd BigInt
 cmake -B build
 cmake --build build
-./build/BigInt_gtest
+./build/BigInt_tests
 ```
 
 ## Contributing
