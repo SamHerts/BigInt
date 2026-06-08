@@ -359,6 +359,8 @@ namespace BigInt {
 
         static bool is_prime(const bigint&);
 
+        static int count_digits(const bigint&);
+
         static bigint sum_of_digits(const bigint& input) {
             bigint sum;
             for (auto base : input.vec) {
@@ -425,7 +427,6 @@ namespace BigInt {
 
         static bool is_bigint(const std::string&);
 
-        static int count_digits(const bigint&);
 
         static int char_to_int(const char input) {
             return input - '0';

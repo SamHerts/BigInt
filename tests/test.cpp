@@ -443,6 +443,17 @@ TEST(Test_BigInt, Pow_Tests) {
 
     EXPECT_EQ(bigint::pow(std::string{kHugeA}, 1), std::string{kHugeA});
 }
+TEST(Test_BigInt, Count_Tests) {
+    EXPECT_EQ(bigint::count_digits(0), 1);
+    EXPECT_EQ(bigint::count_digits(1), 1);
+    EXPECT_EQ(bigint::count_digits(100000000), 9);
+    EXPECT_EQ(bigint::count_digits(1000000000), 10);
+    EXPECT_EQ(bigint::count_digits(10000000000), 11);
+    EXPECT_EQ(bigint::count_digits(1000000000000000000), 19);
+    EXPECT_EQ(bigint::count_digits(std::string{"1000000000000000000000"}), 22);
+    EXPECT_EQ(bigint::count_digits(1000000005), 10);
+
+}
 
 TEST_F(Test_BigInt_Performance, Addition_Speed_Tests) {
     std::cout << "--- Starting Performance Tests (Sample size: " << number_count << ") ---" << std::endl;
