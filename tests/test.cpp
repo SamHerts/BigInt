@@ -471,6 +471,7 @@ TEST(Test_BigInt, Log_Tests) {
     EXPECT_EQ(bigint::log10(999), 2);
     EXPECT_EQ(bigint::log10(1000), 3);
     EXPECT_EQ(bigint::log10(100000000), 8);
+    EXPECT_EQ(bigint::log10(1000000005), 9);
     EXPECT_EQ(bigint::log10(999999999), 8);
     EXPECT_EQ(bigint::log10(std::string{kHugeB}), 99);
     EXPECT_THROW(bigint::log10(0), std::domain_error);
