@@ -450,6 +450,50 @@ TEST(Test_BigInt, Pow_Tests) {
 
     EXPECT_EQ(bigint::pow(std::string{kHugeA}, 1), std::string{kHugeA});
 }
+
+TEST(Test_BigInt, Log_Tests) {
+    // log2 — floor(log2(n))
+    EXPECT_EQ(bigint::log2(1), 0);
+    EXPECT_EQ(bigint::log2(2), 1);
+    EXPECT_EQ(bigint::log2(3), 1);
+    EXPECT_EQ(bigint::log2(4), 2);
+    EXPECT_EQ(bigint::log2(8), 3);
+    EXPECT_EQ(bigint::log2(1024), 10);
+    EXPECT_THROW(bigint::log2(0), std::domain_error);
+    EXPECT_THROW(bigint::log2(-1), std::domain_error);
+
+    // log10 — floor(log10(n))
+    EXPECT_EQ(bigint::log10(1), 0);
+    EXPECT_EQ(bigint::log10(9), 0);
+    EXPECT_EQ(bigint::log10(10), 1);
+    EXPECT_EQ(bigint::log10(99), 1);
+    EXPECT_EQ(bigint::log10(100), 2);
+    EXPECT_EQ(bigint::log10(999), 2);
+    EXPECT_EQ(bigint::log10(1000), 3);
+    EXPECT_EQ(bigint::log10(100000000), 8);
+    EXPECT_EQ(bigint::log10(999999999), 8);
+    EXPECT_EQ(bigint::log10(std::string{kHugeB}), 99);
+    EXPECT_THROW(bigint::log10(0), std::domain_error);
+    EXPECT_THROW(bigint::log10(-1), std::domain_error);
+
+    // logwithbase — floor(log_base(n)) via integer log2 division
+    EXPECT_EQ(bigint::logwithbase(8, 2), 3);
+    EXPECT_EQ(bigint::logwithbase(100, 10), 2);
+    EXPECT_EQ(bigint::logwithbase(1000, 10), 3);
+    EXPECT_EQ(bigint::logwithbase(1024, 2), 10);
+
+    // antilog2 — 2^n
+    EXPECT_EQ(bigint::antilog2(0), 1);
+    EXPECT_EQ(bigint::antilog2(1), 2);
+    EXPECT_EQ(bigint::antilog2(10), 1024);
+
+    // antilog10 — 10^n
+    EXPECT_EQ(bigint::antilog10(0), 1);
+    EXPECT_EQ(bigint::antilog10(1), 10);
+    EXPECT_EQ(bigint::antilog10(2), 100);
+    EXPECT_EQ(bigint::antilog10(50), "100000000000000000000000000000000000000000000000000");
+}
+
 TEST(Test_BigInt, Sqrt_Tests) {
     EXPECT_EQ(bigint::sqrt(0), 0);
     EXPECT_EQ(bigint::sqrt(1), 1);
