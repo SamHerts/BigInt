@@ -740,15 +740,7 @@ namespace BigInt {
         if (input == 1)
             return 0;
 
-        if (input.vec.size() == 1) {
-            return std::log10(input.vec.back());
-        }
-        int count = 0;
-        for (auto number : input.vec) {
-            count += count_digits(number);
-        }
-
-        return count - 1;
+        return count_digits(input) - 1;
     }
 
     inline bigint bigint::logwithbase(const bigint& input, const bigint& base) {
