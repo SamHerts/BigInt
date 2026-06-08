@@ -902,7 +902,7 @@ namespace BigInt {
     inline std::string bigint::vector_to_string(const std::vector<long long>& input) {
         std::stringstream ss;
         bool first = true;
-        for (auto partial : input) {
+        for (const auto partial : input) {
             if (first) {
                 ss << partial; // No padding for the first number
                 first = false;
@@ -916,7 +916,7 @@ namespace BigInt {
 
     inline int bigint::count_digits(const bigint& input) {
         std::string my_string = vector_to_string(input.vec);
-        return static_cast<int>(my_string.length()) - 1;
+        return static_cast<int>(my_string.length());
     }
 } // namespace::BigInt
 
